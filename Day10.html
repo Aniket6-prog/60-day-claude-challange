@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aniket Kumar Gupta | Full Stack Developer</title>
+<meta name="description" content="Portfolio of Aniket Kumar Gupta - B.Tech Computer Science student, Full Stack Web Developer and Frontend Developer Intern.">
+<meta name="keywords" content="Aniket Kumar Gupta, Portfolio, Full Stack Developer, React, Java, Python">
+<script src="https://cdn.tailwindcss.com"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+body{
+font-family:'Poppins',sans-serif;
+scroll-behavior:smooth;
+}
+.progress{
+animation:fill 2s ease;
+}
+@keyframes fill{
+from{width:0}
+}
+.fade{
+opacity:0;
+transform:translateY(30px);
+transition:.8s;
+}
+.fade.show{
+opacity:1;
+transform:translateY(0);
+}
+.active{
+color:#14b8a6;
+}
+</style>
+</head>
+
+<body class="bg-slate-950 text-white">
+
+<!-- Navbar -->
+<nav class="fixed w-full bg-slate-900/80 backdrop-blur-md z-50">
+<div class="max-w-7xl mx-auto flex justify-between items-center p-5">
+<h1 class="text-2xl font-bold text-teal-400">AKG</h1>
+
+<div class="space-x-6 hidden md:flex">
+<a href="#home" class="nav-link">Home</a>
+<a href="#about" class="nav-link">About</a>
+<a href="#skills" class="nav-link">Skills</a>
+<a href="#projects" class="nav-link">Projects</a>
+<a href="#achievement" class="nav-link">Achievements</a>
+<a href="#contact" class="nav-link">Contact</a>
+</div>
+
+<button id="themeBtn" class="bg-teal-500 px-4 py-2 rounded-lg">
+☀️
+</button>
+</div>
+</nav>
+
+<!-- Hero -->
+<section id="home" class="min-h-screen flex items-center justify-center px-6">
+<div class="text-center">
+<h1 class="text-5xl md:text-7xl font-bold mb-4">
+Aniket Kumar Gupta
+</h1>
+
+<h2 class="text-2xl text-teal-400 mb-5">
+<span id="typing"></span>
+</h2>
+
+<p class="max-w-2xl mx-auto text-gray-300">
+B.Tech Computer Science student passionate about Full Stack Web Development and modern technologies. Experienced in building responsive interfaces and delivering practical projects using React, Java, Python and SQL.
+</p>
+
+
+<div class="mt-8 flex justify-center gap-5">
+<a href="mailto:aniketkumargupta.9120@email.com" class="bg-teal-500 px-5 py-3 rounded-xl">
+Email
+</a>
+
+<a href="https://linkedin.com/in/aniket-kumar-gupta-2668662ba" target="_blank"
+class="border border-teal-500 px-5 py-3 rounded-xl">
+LinkedIn
+</a>
+
+<a href="https://github.com/Aniket6-prog" target="_blank"
+class="border border-teal-500 px-5 py-3 rounded-xl">
+GitHub
+</a>
+</div>
+</div>
+</section>
+
+<!-- About -->
+<section id="about" class="py-20 max-w-6xl mx-auto px-6 fade">
+<h2 class="text-4xl font-bold mb-8 text-teal-400">
+About Me
+</h2>
+
+<p class="text-gray-300 leading-8">
+Motivated Computer Science student from IMS Engineering College, Ghaziabad. Currently working as a Frontend Developer Intern at CodeAlpha. I enjoy building modern web applications and continuously learning new technologies to solve real-world problems.
+</p>
+</section>
+
+<!-- Skills -->
+<section id="skills" class="py-20 max-w-6xl mx-auto px-6 fade">
+<h2 class="text-4xl font-bold mb-10 text-teal-400">
+Skills
+</h2>
+
+<div class="grid md:grid-cols-2 gap-10">
+
+<div>
+<h3 class="text-2xl mb-6">Technical Skills</h3>
+
+<div class="mb-6">
+<p>Java</p>
+<div class="bg-gray-700 rounded-full">
+<div class="progress bg-teal-500 h-3 rounded-full" style="width:85%"></div>
+</div>
+</div>
+
+<div class="mb-6">
+<p>Python</p>
+<div class="bg-gray-700 rounded-full">
+<div class="progress bg-teal-500 h-3 rounded-full" style="width:80%"></div>
+</div>
+</div>
+
+<div class="mb-6">
+<p>React.js</p>
+<div class="bg-gray-700 rounded-full">
+<div class="progress bg-teal-500 h-3 rounded-full" style="width:82%"></div>
+</div>
+</div>
+
+<div class="mb-6">
+<p>SQL</p>
+<div class="bg-gray-700 rounded-full">
+<div class="progress bg-teal-500 h-3 rounded-full" style="width:78%"></div>
+</div>
+</div>
+
+</div>
+
+<div>
+<h3 class="text-2xl mb-6">Tools & Soft Skills</h3>
+
+<div class="flex flex-wrap gap-3">
+<span class="bg-slate-800 px-4 py-2 rounded-xl">GitHub</span>
+<span class="bg-slate-800 px-4 py-2 rounded-xl">VS Code</span>
+<span class="bg-slate-800 px-4 py-2 rounded-xl">Google AI Studio</span>
+<span class="bg-slate-800 px-4 py-2 rounded-xl">Leadership</span>
+<span class="bg-slate-800 px-4 py-2 rounded-xl">Communication</span>
+<span class="bg-slate-800 px-4 py-2 rounded-xl">Teamwork</span>
+</div>
+
+</div>
+</div>
+</section>
+
+<!-- Projects -->
+<section id="projects" class="py-20 max-w-6xl mx-auto px-6 fade">
+<h2 class="text-4xl font-bold mb-10 text-teal-400">
+Projects
+</h2>
+
+<div class="grid md:grid-cols-3 gap-8">
+
+<div class="bg-slate-900 p-6 rounded-2xl">
+<h3 class="text-2xl mb-4">Portfolio Website</h3>
+<p class="text-gray-300 mb-5">
+Personal portfolio showcasing projects, skills and achievements.
+</p>
+<div class="text-teal-400">
+HTML • Tailwind • JavaScript
+</div>
+</div>
+
+<div class="bg-slate-900 p-6 rounded-2xl">
+<h3 class="text-2xl mb-4">Image Gallery</h3>
+<p class="text-gray-300 mb-5">
+Interactive gallery application with organized layout and responsiveness.
+</p>
+<div class="text-teal-400">
+HTML • CSS • JavaScript
+</div>
+</div>
+
+<div class="bg-slate-900 p-6 rounded-2xl">
+<h3 class="text-2xl mb-4">Mystic Pathways</h3>
+<p class="text-gray-300 mb-5">
+Tourism website featuring lesser-known destinations across India.
+</p>
+<div class="text-teal-400">
+HTML • CSS • JavaScript
+</div>
+</div>
+
+</div>
+</section>
+
+<!-- Achievements -->
+<section id="achievement" class="py-20 max-w-6xl mx-auto px-6 fade">
+<h2 class="text-4xl font-bold mb-10 text-teal-400">
+Achievements & Certifications
+</h2>
+
+<div class="space-y-6">
+
+<div class="bg-slate-900 p-6 rounded-2xl">
+Frontend Developer Intern — CodeAlpha (2026)
+</div>
+
+<div class="bg-slate-900 p-6 rounded-2xl">
+Android Developer Virtual Intern — AICTE Eduskill
+</div>
+
+<div class="bg-slate-900 p-6 rounded-2xl">
+B.Tech Computer Science Student with consistent academic performance
+</div>
+
+</div>
+</section>
+
+<!-- Contact -->
+<section id="contact" class="py-20 max-w-5xl mx-auto px-6 fade">
+
+<h2 class="text-4xl font-bold mb-10 text-teal-400">
+Contact
+</h2>
+
+<form class="space-y-5">
+
+<input class="w-full p-4 rounded-xl text-black"
+placeholder="Your Name">
+
+<input class="w-full p-4 rounded-xl text-black"
+placeholder="Email">
+
+<textarea rows="5"
+class="w-full p-4 rounded-xl text-black"
+placeholder="Message"></textarea>
+
+<button class="bg-teal-500 px-6 py-3 rounded-xl">
+Send Message
+</button>
+
+</form>
+
+<div class="mt-8 text-gray-300">
+📍 Ghaziabad, Uttar Pradesh<br><br>
+📧 aniketkumargupta.9120@email.com
+</div>
+
+</section>
+
+<footer class="text-center py-8 border-t border-gray-800">
+© 2026 Aniket Kumar Gupta
+</footer>
+
+<script>
+const roles=[
+"Full Stack Web Developer",
+"Frontend Developer Intern",
+"Java Developer",
+"React Enthusiast"
+];
+
+let i=0;
+let j=0;
+let current="";
+let isDeleting=false;
+
+function type(){
+current=roles[i];
+
+if(!isDeleting){
+document.getElementById("typing").textContent=current.substring(0,j++);
+if(j>current.length){
+isDeleting=true;
+setTimeout(type,1000);
+return;
+}
+}else{
+document.getElementById("typing").textContent=current.substring(0,j--);
+if(j===0){
+isDeleting=false;
+i=(i+1)%roles.length;
+}
+}
+
+setTimeout(type,isDeleting?60:120);
+}
+type();
+
+const observer=new IntersectionObserver(entries=>{
+entries.forEach(entry=>{
+if(entry.isIntersecting){
+entry.target.classList.add("show");
+}
+});
+});
+
+document.querySelectorAll(".fade").forEach(el=>{
+observer.observe(el);
+});
+
+document.getElementById("themeBtn").onclick=()=>{
+document.body.classList.toggle("bg-white");
+document.body.classList.toggle("text-black");
+document.body.classList.toggle("bg-slate-950");
+};
+
+window.addEventListener("scroll",()=>{
+let sections=document.querySelectorAll("section");
+let nav=document.querySelectorAll(".nav-link");
+
+sections.forEach(sec=>{
+let top=window.scrollY;
+let offset=sec.offsetTop-150;
+let height=sec.offsetHeight;
+let id=sec.getAttribute("id");
+
+if(top>=offset && top<offset+height){
+nav.forEach(link=>{
+link.classList.remove("active");
+document.querySelector('a[href*='+id+']').classList.add("active");
+});
+}
+});
+});
+</script>
+
+</body>
+</html>
+```
