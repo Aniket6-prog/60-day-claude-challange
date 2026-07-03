@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Face Puzzle Game</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+    <div class="container">
+        <h1>Face Puzzle</h1>
+
+        <!-- 1. CAMERA SCREEN -->
+        <div id="screen-camera" class="screen active">
+            <div class="video-container">
+                <video id="camera-feed" autoplay playsinline muted></video>
+                <div id="camera-error" class="camera-error">
+                    Camera access denied or unavailable. Please allow permissions.
+                </div>
+            </div>
+            <button class="btn" id="btn-take-photo">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg>
+                Take Photo
+            </button>
+        </div>
+
+        <!-- 2. SETUP SCREEN -->
+        <div id="screen-setup" class="screen">
+            <div class="preview-container">
+                <canvas id="photo-preview"></canvas>
+            </div>
+            <p style="margin-bottom: 10px; font-weight: 600;">Select Difficulty</p>
+            <div class="difficulty-options">
+                <button class="diff-btn" data-size="3">3 &times; 3<br><small>Easy</small></button>
+                <button class="diff-btn" data-size="4">4 &times; 4<br><small>Medium</small></button>
+                <button class="diff-btn" data-size="5">5 &times; 5<br><small>Hard</small></button>
+            </div>
+            <button class="btn btn-secondary" id="btn-retake">Retake Photo</button>
+        </div>
+
+        <!-- 3. GAME SCREEN -->
+        <div id="screen-game" class="screen">
+            <div class="stats-bar">
+                <div class="stat-item">
+                    <span class="stat-label">Time</span>
+                    <span id="display-time">00:00.0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Moves</span>
+                    <span id="display-moves">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Correct</span>
+                    <span id="display-correct">0/0</span>
+                </div>
+            </div>
+
+            <div class="puzzle-container" id="puzzle-container">
+                <!-- Pieces injected here via JS -->
+            </div>
+
+            <div class="btn-group">
+                <button class="btn btn-secondary" id="btn-new-photo-game">New Photo</button>
+                <button class="btn" id="btn-restart">Restart</button>
+            </div>
+
+            <!-- RESULTS OVERLAY -->
+            <div id="results-overlay" class="overlay">
+                <h2>Puzzle Solved!</h2>
+                <div class="results-stats">
+                    <p>Time: <strong id="result-time"></strong></p>
+                    <p>Moves: <strong id="result-moves"></strong></p>
+                    <p>Difficulty: <strong id="result-diff"></strong></p>
+                </div>
+                
+                <div class="leaderboard">
+                    <h3>Top 5 Times</h3>
+                    <ul class="leaderboard-list" id="leaderboard-list">
+                        <!-- Injected via JS -->
+                    </ul>
+                </div>
+
+                <button class="btn" id="btn-play-again">Play Again</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
