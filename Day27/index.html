@@ -1,0 +1,425 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prior Authorization Story Simulator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* Custom scrollbar for chat container */
+        #chat-container::-webkit-scrollbar {
+            width: 6px;
+        }
+        #chat-container::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        #chat-container::-webkit-scrollbar-thumb {
+            background-color: #cbd5e1;
+            border-radius: 20px;
+        }
+        .fade-in {
+            animation: fadeIn 0.4s ease-in-out;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+    </style>
+</head>
+<!-- Replaced solid background with a colorful animated-looking gradient -->
+<body class="bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500 h-screen flex justify-center font-sans overflow-hidden">
+
+    <!-- Main App Container: Added backdrop-blur and slight transparency (bg-white/95) -->
+    <div class="w-full max-w-2xl bg-white/95 backdrop-blur-sm h-full flex flex-col shadow-2xl relative">
+        
+        <!-- Header & Progress Bar -->
+        <header class="bg-white/90 border-b border-slate-200 z-10 shrink-0 shadow-sm backdrop-blur-md">
+            <div class="p-4 flex items-center justify-between">
+                <div>
+                    <h1 class="text-lg font-bold text-slate-800">Prior Authorization Simulator</h1>
+                    <p class="text-xs text-slate-500 font-medium tracking-wide uppercase">Healthcare Ops Education</p>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div class="w-full bg-slate-100 h-1.5">
+                <div id="progress-bar" class="bg-gradient-to-r from-indigo-500 to-pink-500 h-1.5 transition-all duration-500 w-0"></div>
+            </div>
+        </header>
+
+        <!-- Chat Feed -->
+        <main id="chat-container" class="flex-1 overflow-y-auto p-4 space-y-4 pb-32">
+            <!-- Messages will be appended here via JS createElement -->
+        </main>
+
+        <!-- Controls / Choices -->
+        <footer class="bg-white/90 backdrop-blur-md border-t border-slate-200 p-4 shrink-0 absolute bottom-0 w-full shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] min-h-[90px]">
+            <div id="controls-container" class="flex flex-col gap-2 max-w-md mx-auto">
+                <!-- Buttons will be appended here -->
+            </div>
+        </footer>
+
+    </div>
+
+    <script>
+        // DOM Elements
+        const chatContainer = document.getElementById('chat-container');
+        const controlsContainer = document.getElementById('controls-container');
+        const progressBar = document.getElementById('progress-bar');
+
+        // Story Data Configuration
+        const scenes = [
+            {
+                id: 1,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 1: Doctor Visit' },
+                    { speaker: 'narrator', text: 'Rahul visits City Medical Center. Dr. Patel diagnoses him with Rheumatoid Arthritis.' },
+                    { speaker: 'narrator', text: '"Rahul, I am prescribing Humira. It is a strong biologic medication to help manage your arthritis," says Dr. Patel.' },
+                    { speaker: 'rahul', text: 'Thank you, Dr. Patel. I will go pick it up right away.' }
+                ],
+                choices: [
+                    {
+                        text: 'Wait, does my insurance cover this?',
+                        responses: [
+                            { speaker: 'rahul', text: 'Wait, does my insurance automatically cover a drug like this?' },
+                            { speaker: 'priya', text: 'Great question. With specialty drugs, there is usually an extra step.' }
+                        ]
+                    },
+                    {
+                        text: 'I\'ll head straight to the pharmacy.',
+                        responses: [
+                            { speaker: 'rahul', text: 'I\'ll head straight to the pharmacy.' },
+                            { speaker: 'priya', text: 'Hold on! With specialty medications, there is usually a step before the pharmacy is even involved.' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 2,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 2: Insurance Roadblock' },
+                    { speaker: 'priya', text: 'Because Humira is a high-cost specialty drug, Dr. Patel\'s office must submit a Prior Authorization (PA) directly to your payer, let\'s call them StarCare Health (an illustrative example).' },
+                    { speaker: 'rahul', text: 'Does the pharmacy do that?' },
+                    { speaker: 'priya', text: 'No. The flow is: Provider → PA Request → Payer. If approved, the PA is saved on your file permanently so the pharmacy can fill it.' }
+                ],
+                choices: [
+                    {
+                        text: 'Why can\'t I just get my medicine?',
+                        responses: [
+                            { speaker: 'rahul', text: 'Why can\'t I just get my medicine right away?' }
+                        ]
+                    },
+                    {
+                        text: 'What exactly is a PA?',
+                        responses: [
+                            { speaker: 'rahul', text: 'What exactly is a Prior Authorization?' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 3,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 3: What is PA?' },
+                    { speaker: 'priya', text: 'Prior Authorization is a process where your insurance checks if a medication is medically necessary before they agree to pay for it.' },
+                    { speaker: 'priya', text: 'Sometimes they require "step therapy"—meaning you have to try a cheaper drug first. But for aggressive diagnoses like yours, step therapy isn\'t just bureaucracy; delays can affect disease progression.' },
+                    { speaker: 'priya', text: 'In fact, according to the AMA 2023 PA Survey: PA causes treatment delays in the majority of cases.' }
+                ],
+                choices: [
+                    {
+                        text: 'That sounds like bureaucracy to save money.',
+                        responses: [
+                            { speaker: 'rahul', text: 'That sounds like it\'s just bureaucracy to save money.' },
+                            { speaker: 'priya', text: 'It often feels that way, though insurers use it to ensure safe, cost-effective care. Let\'s see how they actually decide.' }
+                        ]
+                    },
+                    {
+                        text: 'What is StarCare checking?',
+                        responses: [
+                            { speaker: 'rahul', text: 'So what exactly is StarCare checking right now?' },
+                            { speaker: 'priya', text: 'Let\'s look behind the curtain.' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 4,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 4: Insurance Review' },
+                    { speaker: 'priya', text: 'StarCare Health is reviewing four main things in their system:' },
+                    { speaker: 'priya', text: '1. Eligibility (Are you an active member?)\n2. Clinical Documentation (Did the doctor send your chart?)\n3. ICD-10 Match (Does your diagnosis code match the drug\'s approved use?)\n4. Step Therapy (Have you tried baseline treatments first?)' },
+                    { speaker: 'rahul', text: 'That is a lot of paperwork.' }
+                ],
+                choices: [
+                    {
+                        text: 'What if they are missing documents?',
+                        responses: [
+                            { speaker: 'rahul', text: 'What if Dr. Patel forgot to send the step therapy history?' }
+                        ]
+                    },
+                    {
+                        text: 'How long does this take?',
+                        responses: [
+                            { speaker: 'rahul', text: 'How long does this review usually take?' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 5,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 5: Denial' },
+                    { speaker: 'narrator', text: 'Three days later, StarCare Health sends a response to the provider portal: DENIED.' },
+                    { speaker: 'rahul', text: 'Denied?! Does this mean I can never get Humira?' },
+                    { speaker: 'priya', text: 'Don\'t panic! A denial is rarely permanent. In your case, it was denied for missing step therapy documentation.' },
+                    { speaker: 'priya', text: 'This happens frequently. On the operations side, PA denials cost physician offices 2+ staff hours to resolve.' }
+                ],
+                choices: [
+                    {
+                        text: 'What do we do now?',
+                        responses: [
+                            { speaker: 'rahul', text: 'What do we do now to fix this?' }
+                        ]
+                    },
+                    {
+                        text: 'Can I appeal?',
+                        responses: [
+                            { speaker: 'rahul', text: 'Can I appeal their decision?' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 6,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 6: Appeal' },
+                    { speaker: 'priya', text: 'Yes, we file an appeal! Dr. Patel\'s office will gather the missing clinical documents showing you already tried the required baseline treatments.' },
+                    { speaker: 'priya', text: 'They will also write a Letter of Medical Necessity explaining exactly why you need Humira.' },
+                    { speaker: 'rahul', text: 'So Dr. Patel handles the formal appeal filing?' },
+                    { speaker: 'priya', text: 'Exactly. They submit the formal appeal and documentation back to StarCare Health.' }
+                ],
+                choices: [
+                    {
+                        text: 'Fingers crossed!',
+                        responses: [
+                            { speaker: 'rahul', text: 'Fingers crossed this works.' }
+                        ]
+                    },
+                    {
+                        text: 'Will this take another 3 days?',
+                        responses: [
+                            { speaker: 'rahul', text: 'Will this take another few days to review?' },
+                            { speaker: 'priya', text: 'Usually yes. But let\'s fast forward.' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 7,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 7: Approval' },
+                    { speaker: 'narrator', text: 'StarCare Health reviews the appeal and the Letter of Medical Necessity. Status Updated: APPROVED.' },
+                    { speaker: 'priya', text: 'Great news! The PA is approved and a reference number has been issued.' },
+                    { speaker: 'rahul', text: 'So I can finally go to the pharmacy?' },
+                    { speaker: 'priya', text: 'Yes! And the approved PA is saved on file. You will not need a repeat PA for Humira refills as long as this authorization is active.' }
+                ],
+                choices: [
+                    {
+                        text: 'What a relief.',
+                        responses: [
+                            { speaker: 'rahul', text: 'What a relief! I\'m glad that\'s over.' }
+                        ]
+                    },
+                    {
+                        text: 'I learned a lot.',
+                        responses: [
+                            { speaker: 'rahul', text: 'I learned a lot about how the system works.' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 8,
+                messages: [
+                    { speaker: 'narrator', text: 'Scene 8: Takeaways' },
+                    { speaker: 'priya', text: 'Let\'s review the takeaways from this journey.' },
+                    { speaker: 'priya', text: 'Patient Perspective: You learned that PA requires patience, approvals live on your file, and denials are not permanent and can be successfully appealed.' },
+                    { speaker: 'priya', text: 'System Perspective: Health systems track metrics like Denial Rate, Appeal Success Rate, and Resolution Time to improve this exact process.' },
+                    { speaker: 'narrator', text: 'Rahul successfully picks up his medication, empowered with a better understanding of healthcare operations.' }
+                ],
+                choices: [
+                    {
+                        text: 'Restart Simulator',
+                        responses: [],
+                        action: 'restart'
+                    }
+                ]
+            }
+        ];
+
+        let currentSceneIndex = 0;
+        let isTyping = false;
+
+        // Core UI Function to safely append messages
+        function createAndAppendMessage(msg, callback) {
+            const row = document.createElement('div');
+            row.className = `w-full flex fade-in ${
+                msg.speaker === 'priya' ? 'justify-end' : 
+                msg.speaker === 'rahul' ? 'justify-start' : 
+                'justify-center'
+            }`;
+
+            const bubble = document.createElement('div');
+            
+            if (msg.speaker === 'priya') {
+                bubble.className = 'bg-indigo-600 text-white rounded-2xl rounded-br-none px-4 py-3 max-w-[85%] shadow-md flex flex-col space-y-1';
+                
+                const nameTag = document.createElement('span');
+                nameTag.className = 'text-[11px] text-indigo-200 font-semibold uppercase tracking-wider mb-1';
+                nameTag.textContent = '👧 Priya (Ops)';
+                bubble.appendChild(nameTag);
+
+                const textNode = document.createElement('span');
+                textNode.className = 'text-[15px] leading-relaxed';
+                textNode.innerText = msg.text; // innerText respects \n
+                bubble.appendChild(textNode);
+
+            } else if (msg.speaker === 'rahul') {
+                bubble.className = 'bg-white border border-slate-200 text-slate-800 rounded-2xl rounded-bl-none px-4 py-3 max-w-[85%] shadow-md flex flex-col space-y-1';
+                
+                const nameTag = document.createElement('span');
+                nameTag.className = 'text-[11px] text-slate-500 font-semibold uppercase tracking-wider mb-1';
+                nameTag.textContent = '👦 Rahul';
+                bubble.appendChild(nameTag);
+
+                const textNode = document.createElement('span');
+                textNode.className = 'text-[15px] leading-relaxed';
+                textNode.innerText = msg.text;
+                bubble.appendChild(textNode);
+
+            } else {
+                // Narrator / Doctor
+                bubble.className = 'text-slate-500 italic text-sm text-center max-w-[90%] my-2 py-2';
+                bubble.textContent = msg.text;
+            }
+
+            row.appendChild(bubble);
+            chatContainer.appendChild(row);
+            
+            // Auto scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            if (callback) {
+                setTimeout(callback, 900);
+            }
+        }
+
+        // Recursively play a list of messages
+        function playMessages(messagesArray, onComplete) {
+            let index = 0;
+            
+            function next() {
+                if (index < messagesArray.length) {
+                    createAndAppendMessage(messagesArray[index], next);
+                    index++;
+                } else {
+                    if (onComplete) onComplete();
+                }
+            }
+            
+            next();
+        }
+
+        // Render choice buttons safely
+        function renderChoices(choices) {
+            // Clear controls using DOM manipulation (no innerHTML)
+            while (controlsContainer.firstChild) {
+                controlsContainer.removeChild(controlsContainer.firstChild);
+            }
+
+            choices.forEach(choice => {
+                const btn = document.createElement('button');
+                btn.className = 'w-full bg-white border border-slate-300 text-slate-700 font-medium py-3 px-4 rounded-xl hover:bg-indigo-50 hover:border-indigo-400 hover:text-indigo-700 transition-colors shadow-sm text-sm text-left';
+                btn.textContent = choice.text;
+                
+                btn.addEventListener('click', () => {
+                    handleChoiceClick(choice);
+                });
+                
+                controlsContainer.appendChild(btn);
+            });
+        }
+
+        function clearChoices() {
+            while (controlsContainer.firstChild) {
+                controlsContainer.removeChild(controlsContainer.firstChild);
+            }
+        }
+
+        // Handle Choice Selection
+        function handleChoiceClick(choice) {
+            if (isTyping) return;
+            isTyping = true;
+            clearChoices();
+
+            if (choice.action === 'restart') {
+                // Reset chat
+                while (chatContainer.firstChild) {
+                    chatContainer.removeChild(chatContainer.firstChild);
+                }
+                currentSceneIndex = 0;
+                isTyping = false;
+                loadScene();
+                return;
+            }
+
+            // Play the dynamic responses based on choice
+            playMessages(choice.responses, () => {
+                // Then proceed to next scene
+                currentSceneIndex++;
+                if (currentSceneIndex < scenes.length) {
+                    loadScene();
+                }
+            });
+        }
+
+        // Main Scene Loader
+        function loadScene() {
+            isTyping = true;
+            const scene = scenes[currentSceneIndex];
+            
+            // Update Progress Bar
+            const progressPercentage = ((currentSceneIndex + 1) / scenes.length) * 100;
+            progressBar.style.width = `${progressPercentage}%`;
+
+            // Optional Divider
+            if (currentSceneIndex > 0) {
+                const dividerRow = document.createElement('div');
+                dividerRow.className = 'w-full flex justify-center py-4 fade-in';
+                const dot = document.createElement('div');
+                dot.className = 'h-1.5 w-1.5 bg-slate-300 rounded-full mx-1';
+                const dot2 = document.createElement('div');
+                dot2.className = 'h-1.5 w-1.5 bg-slate-300 rounded-full mx-1';
+                const dot3 = document.createElement('div');
+                dot3.className = 'h-1.5 w-1.5 bg-slate-300 rounded-full mx-1';
+                dividerRow.appendChild(dot);
+                dividerRow.appendChild(dot2);
+                dividerRow.appendChild(dot3);
+                chatContainer.appendChild(dividerRow);
+            }
+
+            // Play scene messages
+            playMessages(scene.messages, () => {
+                renderChoices(scene.choices);
+                isTyping = false;
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            });
+        }
+
+        // Initialize App
+        window.onload = () => {
+            loadScene();
+        };
+
+    </script>
+</body>
+</html>
