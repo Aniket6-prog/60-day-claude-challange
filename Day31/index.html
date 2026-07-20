@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Supply Chain Control Tower</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="header-title">
+            <h1>Supply Chain Control Tower</h1>
+            <div class="status-indicator">
+                <div class="dot"></div>
+                <span id="system-status">System Online</span>
+            </div>
+        </div>
+        <div class="timer-display" id="timer">03:00</div>
+        <div class="header-controls">
+            <button class="btn" id="btn-pause">Pause</button>
+            <button class="btn" id="btn-help">Help</button>
+        </div>
+    </header>
+
+    <!-- KPI Board -->
+    <div id="kpi-board">
+        <div class="kpi-card" id="kpi-service">
+            <div class="kpi-label">Service Level <span>🎯</span></div>
+            <div class="kpi-value" id="val-service">90%</div>
+            <div class="kpi-trend" id="trend-service"></div>
+        </div>
+        <div class="kpi-card" id="kpi-csat">
+            <div class="kpi-label">Customer Sat <span>😊</span></div>
+            <div class="kpi-value" id="val-csat">85%</div>
+            <div class="kpi-trend" id="trend-csat"></div>
+        </div>
+        <div class="kpi-card" id="kpi-inventory">
+            <div class="kpi-label">Inv Health <span>📦</span></div>
+            <div class="kpi-value" id="val-inventory">80%</div>
+            <div class="kpi-trend" id="trend-inventory"></div>
+        </div>
+        <div class="kpi-card" id="kpi-transport">
+            <div class="kpi-label">Transport Eff <span>🚚</span></div>
+            <div class="kpi-value" id="val-transport">80%</div>
+            <div class="kpi-trend" id="trend-transport"></div>
+        </div>
+        <div class="kpi-card" id="kpi-cost">
+            <div class="kpi-label">Operating Cost <span>💸</span></div>
+            <div class="kpi-value" id="val-cost">$50,000</div>
+            <div class="kpi-trend" id="trend-cost"></div>
+        </div>
+        <div class="kpi-card" id="kpi-revenue">
+            <div class="kpi-label">Rev Protected <span>🛡️</span></div>
+            <div class="kpi-value" id="val-revenue">$0</div>
+            <div class="kpi-trend" id="trend-revenue"></div>
+        </div>
+        <div class="kpi-card" id="kpi-score" style="border-left-color: var(--accent-blue);">
+            <div class="kpi-label" style="color: var(--accent-blue);">Total Score <span>⭐</span></div>
+            <div class="kpi-value" id="val-score" style="color: var(--accent-blue);">0</div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <main>
+        <!-- Alerts Stream -->
+        <section class="panel" id="alerts-section">
+            <div class="panel-header">
+                <span>Live Operational Alerts</span>
+                <span id="active-alerts-count">0 Active</span>
+            </div>
+            <div id="alerts-container">
+                <!-- Alerts will be injected here via JS -->
+            </div>
+        </section>
+
+        <!-- Event Log -->
+        <section class="panel" id="log-section">
+            <div class="panel-header">
+                <span>Action Log</span>
+            </div>
+            <div id="log-container">
+                <div class="log-entry">
+                    <span class="log-time">00:00</span> System initialized. Awaiting alerts...
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- Start / Help Modal -->
+    <div class="modal-overlay active" id="intro-modal">
+        <div class="modal">
+            <h2>Head of Operations</h2>
+            <p>Welcome to the Supply Chain Control Tower. Your global network is experiencing turbulence.</p>
+            <p><strong>Your Mission:</strong> Resolve incoming alerts to maximize performance over the next 3 minutes.</p>
+            <ul style="color: var(--text-muted); margin-bottom: 20px; padding-left: 20px; line-height: 1.6; font-size: 0.9rem;">
+                <li>Keep Service Level and Customer Satisfaction high.</li>
+                <li>Control Operating Costs while protecting Revenue.</li>
+                <li>Act fast! Ignored or expired alerts will penalize your KPIs severely.</li>
+                <li>Different decisions have different trade-offs. Choose wisely.</li>
+            </ul>
+            <button class="start-btn" id="btn-start">Start Shift</button>
+        </div>
+    </div>
+
+    <!-- End Game Modal -->
+    <div class="modal-overlay" id="end-modal">
+        <div class="modal">
+            <h2>Shift Complete</h2>
+            <p id="end-summary">Here is your operational summary based on your performance.</p>
+            
+            <div class="stats-grid">
+                <div class="stat-box grade-box">
+                    <div class="kpi-label" style="justify-content: center; color: var(--accent-cyan);">Performance Grade</div>
+                    <div class="grade-value" id="final-grade">A+</div>
+                </div>
+                <div class="stat-box">
+                    <div class="kpi-label">Final Score</div>
+                    <div class="stat-value" id="final-score">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="kpi-label">Alerts Resolved</div>
+                    <div class="stat-value" id="final-resolved">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="kpi-label">Good Decisions</div>
+                    <div class="stat-value" id="final-correct" style="color: var(--alert-green);">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="kpi-label">Poor Decisions</div>
+                    <div class="stat-value" id="final-wrong" style="color: var(--alert-red);">0</div>
+                </div>
+            </div>
+            
+            <button class="restart-btn" id="btn-restart">Play Again</button>
+        </div>
+    </div>
+
+    <!-- Game Logic -->
+    <script src="script.js"></script>
+</body>
+</html>
