@@ -1,0 +1,835 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Integrity Analyzer</title>
+    <style>
+        :root {
+            /* Default to a neutral dark before theme selection */
+            --bg-color: #0f1115;
+            --surface-color: #1a1d24;
+            --surface-hover: #2a2e39;
+            --text-main: #f3f4f6;
+            --text-muted: #9ca3af;
+            --border-color: #374151;
+            
+            --accent-color: #d97757; /* Claude Orange default */
+            --accent-hover: #c46244;
+            --accent-transparent: rgba(217, 119, 87, 0.15);
+            
+            --success: #10b981;
+            --danger: #ef4444;
+            
+            --font-heading: 'Georgia', 'Times New Roman', serif;
+            --font-body: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            
+            --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-body);
+            line-height: 1.6;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        h1, h2, h3, h4 {
+            font-family: var(--font-heading);
+            font-weight: normal;
+            letter-spacing: -0.02em;
+        }
+
+        /* Live Metrics Bar */
+        #metrics-bar {
+            background-color: rgba(15, 17, 21, 0.9);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 100;
+            transform: translateY(-100%);
+            transition: transform 0.5s ease;
+        }
+
+        #metrics-bar.visible {
+            transform: translateY(0);
+        }
+
+        .metric-group {
+            display: flex;
+            gap: 2rem;
+        }
+
+        .metric {
+            display: flex;
+            flex-direction: column;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+        }
+
+        .metric-value {
+            font-family: var(--font-heading);
+            font-size: 1.25rem;
+            color: var(--accent-color);
+            transition: color 0.3s ease;
+        }
+
+        /* Main Container */
+        main {
+            flex: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 6rem 2rem 4rem;
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Screen Management */
+        .screen {
+            display: none;
+            opacity: 0;
+            transform: translateY(20px);
+            animation: fadeIn 0.6s forwards;
+        }
+
+        .screen.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Typography & Layout elements */
+        .title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: var(--text-main);
+        }
+
+        .subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+        }
+
+        .editorial-card {
+            background: var(--surface-color);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 2.5rem;
+            margin-bottom: 2rem;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        }
+
+        .tag {
+            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            background: var(--accent-transparent);
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        /* Interactive Elements */
+        .btn {
+            background: transparent;
+            color: var(--text-main);
+            border: 1px solid var(--border-color);
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font-body);
+            font-size: 1rem;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: var(--transition);
+        }
+
+        .btn:hover {
+            border-color: var(--accent-color);
+            background: var(--accent-transparent);
+        }
+
+        .btn-primary {
+            background: var(--accent-color);
+            color: #fff;
+            border-color: var(--accent-color);
+            font-weight: 600;
+        }
+
+        .btn-primary:hover {
+            background: var(--accent-hover);
+            border-color: var(--accent-hover);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        /* Theme Selector */
+        .theme-options {
+            display: flex;
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .theme-btn {
+            flex: 1;
+            padding: 2rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            background: var(--surface-color);
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-btn:hover {
+            transform: translateY(-5px);
+        }
+
+        .theme-color-swatch {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        /* Interactive Text Selection */
+        .clickable-text {
+            font-family: var(--font-heading);
+            font-size: 2rem;
+            line-height: 1.3;
+            margin-bottom: 1.5rem;
+        }
+
+        .clickable-word {
+            cursor: pointer;
+            border-radius: 3px;
+            transition: var(--transition);
+            padding: 0 0.1rem;
+            border-bottom: 2px solid transparent;
+        }
+
+        .clickable-word:hover.interactive {
+            background: rgba(255,255,255,0.1);
+        }
+
+        .clickable-word.selected {
+            background: var(--accent-transparent);
+            color: var(--accent-color);
+            border-bottom: 2px solid var(--accent-color);
+        }
+        
+        .clickable-word.highlight-danger {
+            background: rgba(239, 68, 68, 0.2);
+            color: #fca5a5;
+            border-bottom: 2px solid var(--danger);
+        }
+
+        /* Mock Article styling */
+        .mock-article {
+            border-left: 3px solid var(--border-color);
+            padding-left: 1.5rem;
+            color: var(--text-muted);
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        /* Reveal Section */
+        .reveal-box {
+            background: var(--surface-hover);
+            border-left: 4px solid var(--accent-color);
+            padding: 1.5rem;
+            margin-top: 2rem;
+            border-radius: 0 4px 4px 0;
+            display: none;
+            animation: fadeIn 0.5s ease;
+        }
+
+        .reveal-box h4 {
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        /* Dashboard specific */
+        .dashboard-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stat-card {
+            background: var(--surface-color);
+            padding: 1.5rem;
+            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        .stat-card h3 {
+            font-size: 3rem;
+            color: var(--accent-color);
+            margin-bottom: 0.5rem;
+        }
+
+        .habit-list {
+            list-style: none;
+        }
+
+        .habit-list li {
+            position: relative;
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .habit-list li::before {
+            content: '→';
+            position: absolute;
+            left: 0;
+            color: var(--accent-color);
+            font-family: var(--font-heading);
+        }
+
+        /* Utilities */
+        .hidden { display: none !important; }
+        .mt-2 { margin-top: 2rem; }
+        .mb-2 { margin-bottom: 2rem; }
+        
+        @media (max-width: 768px) {
+            .theme-options { flex-direction: column; }
+            .dashboard-grid { grid-template-columns: 1fr; }
+            .metric-group { gap: 1rem; flex-wrap: wrap; }
+            .clickable-text { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Live Metrics Bar -->
+    <div id="metrics-bar">
+        <div style="font-family: var(--font-heading); font-size: 1.1rem; color: var(--text-main);">Media Integrity Analyzer</div>
+        <div class="metric-group">
+            <div class="metric">
+                <span>Headline Accuracy</span>
+                <span class="metric-value" id="metric-headline">--</span>
+            </div>
+            <div class="metric">
+                <span>Emotional Neutrality</span>
+                <span class="metric-value" id="metric-emotion">--</span>
+            </div>
+            <div class="metric">
+                <span>Awareness Level</span>
+                <span class="metric-value" id="metric-awareness">--</span>
+            </div>
+        </div>
+    </div>
+
+    <main>
+        <!-- Screen 1: Welcome & Theme Selection -->
+        <div id="screen-welcome" class="screen active">
+            <div class="editorial-card">
+                <span class="tag">Configuration</span>
+                <h1 class="title">Media Integrity Analyzer</h1>
+                <p class="subtitle">An interactive masterclass in modern media literacy. Before we begin analyzing the digital landscape, please select your visual environment.</p>
+                
+                <div class="theme-options">
+                    <button class="theme-btn" onclick="selectTheme('orange')">
+                        <div class="theme-color-swatch" style="background: #d97757;"></div>
+                        <span style="color: var(--text-main); font-family: var(--font-heading); font-size: 1.2rem;">Claude Orange</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Editorial & Warm</span>
+                    </button>
+                    <button class="theme-btn" onclick="selectTheme('cyan')">
+                        <div class="theme-color-swatch" style="background: #00ADB5;"></div>
+                        <span style="color: var(--text-main); font-family: var(--font-heading); font-size: 1.2rem;">Digital Cyan</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Modern & Clinical</span>
+                    </button>
+                    <button class="theme-btn" onclick="selectTheme('emerald')">
+                        <div class="theme-color-swatch" style="background: #10B981;"></div>
+                        <span style="color: var(--text-main); font-family: var(--font-heading); font-size: 1.2rem;">Truth Emerald</span>
+                        <span style="color: var(--text-muted); font-size: 0.85rem;">Calm & Objective</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 2: Challenge 1 Intro -->
+        <div id="screen-ch1-intro" class="screen">
+            <span class="tag">Concept 01</span>
+            <h1 class="title">The Headline Gap</h1>
+            <p class="subtitle">Why do headlines rarely match the story?</p>
+            
+            <div class="editorial-card">
+                <p class="mb-2">In the attention economy, a headline's primary job is no longer to inform you—it is to <strong>capture your click</strong>.</p>
+                <p class="mb-2">This leads to the "Headline Gap": the distance between the exaggerated promise of a title and the mundane reality of the article. Over time, reading only sensational headlines distorts our view of reality, making the world seem more dangerous, polarized, and extreme than it actually is.</p>
+                <p>Let's test your ability to spot the gap.</p>
+                
+                <button class="btn btn-primary mt-2" onclick="nextScreen('screen-ch1-interactive')">Begin Challenge 1</button>
+            </div>
+        </div>
+
+        <!-- Screen 3: Challenge 1 Interactive -->
+        <div id="screen-ch1-interactive" class="screen">
+            <span class="tag">Challenge 01: Headline Detective</span>
+            
+            <div class="editorial-card">
+                <p style="text-transform: uppercase; font-size: 0.8rem; color: var(--text-muted); margin-bottom: 1rem;">Published 2 hours ago</p>
+                
+                <!-- Dynamic Headline injected here -->
+                <div id="ch1-headline-container" class="clickable-text"></div>
+                
+                <div class="mock-article" id="ch1-article-container">
+                    <!-- Dynamic Article -->
+                </div>
+
+                <div id="ch1-step1">
+                    <h3>Would you click this headline in your feed?</h3>
+                    <div class="btn-group">
+                        <button class="btn" onclick="ch1ProceedToStep2('Yes')">Yes, out of curiosity</button>
+                        <button class="btn" onclick="ch1ProceedToStep2('Maybe')">Maybe</button>
+                        <button class="btn" onclick="ch1ProceedToStep2('No')">No, looks suspicious</button>
+                    </div>
+                </div>
+
+                <div id="ch1-step2" class="hidden">
+                    <h3 style="color: var(--accent-color); margin-bottom: 1rem;">Now, click the specific words in the headline that you believe are exaggerated or unsupported by the article text.</h3>
+                    <button class="btn btn-primary" onclick="ch1Reveal()">Analyze Discrepancies</button>
+                </div>
+
+                <!-- Reveal Box -->
+                <div id="ch1-reveal" class="reveal-box">
+                    <h4>Analysis Complete</h4>
+                    <p class="mb-2" id="ch1-explanation"></p>
+                    <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 4px; margin-bottom: 1rem;">
+                        <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Fair Rewrite:</span><br>
+                        <span id="ch1-rewrite" style="font-family: var(--font-heading); font-size: 1.2rem;"></span>
+                    </div>
+                    <p><strong>Key Takeaway:</strong> Always check if the structural facts in the body text support the emotional weight of the headline.</p>
+                    <button class="btn btn-primary mt-2" onclick="nextScreen('screen-ch2-intro')">Proceed to Concept 2</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 4: Challenge 2 Intro -->
+        <div id="screen-ch2-intro" class="screen">
+            <span class="tag">Concept 02</span>
+            <h1 class="title">Emotional Hijacking</h1>
+            <p class="subtitle">How algorithms and creators exploit your nervous system.</p>
+            
+            <div class="editorial-card">
+                <p class="mb-2">Content that triggers high-arousal emotions—specifically <strong>outrage, fear, and awe</strong>—is shared exponentially faster than neutral content.</p>
+                <p class="mb-2">Bad actors and engagement-hungry creators weaponize language to bypass your critical thinking and directly stimulate your fight-or-flight response. When you feel a sudden spike of anger or anxiety while scrolling, you are being manipulated.</p>
+                <p>Let's learn to detect the emotional triggers in social feeds.</p>
+                
+                <button class="btn btn-primary mt-2" onclick="nextScreen('screen-ch2-interactive')">Begin Challenge 2</button>
+            </div>
+        </div>
+
+        <!-- Screen 5: Challenge 2 Interactive -->
+        <div id="screen-ch2-interactive" class="screen">
+            <span class="tag">Challenge 02: Emotion Detector</span>
+            
+            <div class="editorial-card">
+                <div style="display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="width: 40px; height: 40px; border-radius: 50%; background: #374151;"></div>
+                    <div>
+                        <div style="font-weight: bold; font-size: 0.9rem;">Local Community Watch</div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted);">Sponsored • 🌍</div>
+                    </div>
+                </div>
+                
+                <!-- Dynamic Post injected here -->
+                <div id="ch2-post-container" class="clickable-text" style="font-size: 1.5rem;"></div>
+
+                <div id="ch2-step1">
+                    <h3>What is the primary emotion this post is trying to force you to feel?</h3>
+                    <div class="btn-group">
+                        <button class="btn" onclick="ch2ProceedToStep2('Fear')">Fear / Panic</button>
+                        <button class="btn" onclick="ch2ProceedToStep2('Anger')">Anger / Outrage</button>
+                        <button class="btn" onclick="ch2ProceedToStep2('Hope')">Hope / Inspiration</button>
+                    </div>
+                </div>
+
+                <div id="ch2-step2" class="hidden">
+                    <h3 style="color: var(--accent-color); margin-bottom: 1rem;">Select the specific "trigger words" designed to manipulate that emotion.</h3>
+                    <button class="btn btn-primary" onclick="ch2Reveal()">Deconstruct Manipulation</button>
+                </div>
+
+                <!-- Reveal Box -->
+                <div id="ch2-reveal" class="reveal-box">
+                    <h4>Manipulation Tactics Uncovered</h4>
+                    <p class="mb-2" id="ch2-explanation"></p>
+                    
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.5rem;">
+                        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 4px;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Target Audience</span><br>
+                            <span id="ch2-audience"></span>
+                        </div>
+                        <div style="background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 4px;">
+                            <span style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Neutral Translation</span><br>
+                            <span id="ch2-rewrite"></span>
+                        </div>
+                    </div>
+
+                    <p><strong>Key Takeaway:</strong> When a post makes you intensely emotional, pause. Don't share it. The urgency is an illusion designed to bypass your reasoning.</p>
+                    <button class="btn btn-primary mt-2" onclick="showDashboard()">Generate Final Report</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Screen 6: Final Dashboard -->
+        <div id="screen-dashboard" class="screen">
+            <span class="tag">Analysis Complete</span>
+            <h1 class="title">Media Integrity Profile</h1>
+            
+            <div class="dashboard-grid">
+                <div class="stat-card">
+                    <h3 id="final-score">85%</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Literacy Score</p>
+                </div>
+                <div class="stat-card">
+                    <h3 id="final-flag" style="font-size: 2rem; padding-top: 0.5rem; color: var(--text-main);">Emotional Bias</h3>
+                    <p style="color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 0.05em;">Your Biggest Vulnerability</p>
+                </div>
+            </div>
+
+            <div class="editorial-card">
+                <h2 style="margin-bottom: 1.5rem; color: var(--accent-color);">Your Defensive Architecture</h2>
+                <ul class="habit-list">
+                    <li><strong>The 10-Second Rule:</strong> If a headline triggers outrage, wait 10 seconds before reacting or sharing. Let your prefrontal cortex catch up to your amygdala.</li>
+                    <li><strong>Spot the Gap:</strong> Always compare the emotional intensity of the title with the actual facts in the second paragraph of the article.</li>
+                    <li><strong>Identify the Adjective:</strong> Strip away adjectives and adverbs from social media posts. Evaluate the remaining nouns and verbs to see the raw reality.</li>
+                </ul>
+            </div>
+
+            <button class="btn" style="width: 100%; text-align: center;" onclick="resetApp()">Analyze New Scenarios</button>
+        </div>
+    </main>
+
+    <script>
+        // --- State Management ---
+        const state = {
+            theme: 'orange',
+            metrics: {
+                headline: 0,
+                emotion: 0,
+                awareness: 0
+            },
+            currentScenario: {
+                ch1: null,
+                ch2: null
+            },
+            ch1ClickIntent: '',
+            ch2EmotionGuess: ''
+        };
+
+        // --- Data Repositories (Allows Replayability) ---
+        const scenarios = {
+            ch1: [
+                {
+                    headline: "SCIENTISTS PANIC: New Asteroid Will DESTROY Earth In 24 Hours!",
+                    article: "NASA is tracking a new near-Earth object, designated 2026-XQ. While it will pass within 3 million miles of Earth tomorrow, experts assure there is zero risk of impact.",
+                    exaggeratedWords: ["PANIC:", "DESTROY", "Earth", "In", "24", "Hours!"], // exact string matches
+                    explanation: "The article clearly states there is 'zero risk', yet the headline uses terminal language like 'DESTROY' and false urgency ('24 Hours') to manufacture panic for clicks.",
+                    rewrite: "NASA Tracks New Asteroid Passing Safely 3 Million Miles From Earth"
+                },
+                {
+                    headline: "Doctors HATE This: A Miracle Cure for Aging Found in Your Kitchen",
+                    article: "A recent small-scale study suggests that consuming blueberries daily may slightly reduce oxidative stress in cells, a factor commonly associated with the aging process. Medical professionals recommend a balanced diet.",
+                    exaggeratedWords: ["HATE", "This:", "Miracle", "Cure", "Aging"],
+                    explanation: "A minor nutritional study about blueberries is spun into a 'miracle cure'. The trope that doctors 'hate' it is a classic conspiracy hook used to sell supplements.",
+                    rewrite: "Study Suggests Blueberries May Help Reduce Cellular Oxidative Stress"
+                }
+            ],
+            ch2: [
+                {
+                    post: "I CANNOT BELIEVE what the city council just did behind our backs! 😡 They are trying to STEAL our local park to build luxury condos for their rich friends! WE MUST STOP THEM NOW before it's too late!! SHARE THIS EVERYWHERE!",
+                    targetWords: ["CANNOT", "BELIEVE", "behind", "our", "backs!", "STEAL", "rich", "friends!", "MUST", "STOP", "NOW", "SHARE", "EVERYWHERE!"],
+                    emotion: "Anger",
+                    audience: "Local residents, community members",
+                    explanation: "This post uses capitalization, outrage emojis, and loaded verbs ('STEAL', 'behind our backs') to incite anger. It demands immediate action ('SHARE THIS') before the reader can verify if the park is actually being sold.",
+                    rewrite: "The city council is voting on a proposal to rezone a portion of the local park for residential development."
+                },
+                {
+                    post: "WARNING: A terrifying new virus is sweeping through schools and NO ONE is talking about it! Your children are in extreme danger. Protect your family immediately!",
+                    targetWords: ["WARNING:", "terrifying", "NO", "ONE", "extreme", "danger.", "immediately!"],
+                    emotion: "Fear",
+                    audience: "Parents, families",
+                    explanation: "Capitalized warnings and vague but catastrophic phrasing ('terrifying', 'extreme danger') trigger parental protective instincts. The claim that 'NO ONE is talking about it' attempts to position the poster as a secret truth-teller.",
+                    rewrite: "Reports indicate a rise in seasonal flu cases in local schools. Please follow standard hygiene practices."
+                }
+            ]
+        };
+
+        // --- Initialization ---
+        function init() {
+            // Select random scenarios
+            state.currentScenario.ch1 = scenarios.ch1[Math.floor(Math.random() * scenarios.ch1.length)];
+            state.currentScenario.ch2 = scenarios.ch2[Math.floor(Math.random() * scenarios.ch2.length)];
+            
+            renderCh1Text();
+            renderCh2Text();
+        }
+
+        // --- Theme Engine ---
+        const themes = {
+            orange: { accent: '#d97757', hover: '#c46244', trans: 'rgba(217, 119, 87, 0.15)' },
+            cyan: { accent: '#00ADB5', hover: '#008b92', trans: 'rgba(0, 173, 181, 0.15)' },
+            emerald: { accent: '#10B981', hover: '#059669', trans: 'rgba(16, 185, 129, 0.15)' }
+        };
+
+        function selectTheme(color) {
+            state.theme = color;
+            const root = document.documentElement;
+            root.style.setProperty('--accent-color', themes[color].accent);
+            root.style.setProperty('--accent-hover', themes[color].hover);
+            root.style.setProperty('--accent-transparent', themes[color].trans);
+            
+            document.getElementById('metrics-bar').classList.add('visible');
+            updateMetrics(0, 0, 10); // Start with baseline metrics
+            nextScreen('screen-ch1-intro');
+        }
+
+        // --- Navigation ---
+        function nextScreen(screenId) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(screenId).classList.add('active');
+            window.scrollTo(0, 0);
+        }
+
+        // --- Metrics Engine ---
+        function updateMetrics(h, e, a) {
+            if(h) state.metrics.headline = Math.min(100, state.metrics.headline + h);
+            if(e) state.metrics.emotion = Math.min(100, state.metrics.emotion + e);
+            if(a) state.metrics.awareness = Math.min(100, state.metrics.awareness + a);
+
+            animateValue("metric-headline", state.metrics.headline);
+            animateValue("metric-emotion", state.metrics.emotion);
+            animateValue("metric-awareness", state.metrics.awareness);
+        }
+
+        function animateValue(id, end) {
+            const obj = document.getElementById(id);
+            if(!obj) return;
+            let current = parseInt(obj.innerText) || 0;
+            if (current === end) {
+                obj.innerText = end + "%";
+                return;
+            }
+            const step = end > current ? 1 : -1;
+            const timer = setInterval(() => {
+                current += step;
+                obj.innerText = current + "%";
+                if (current === end) clearInterval(timer);
+            }, 20);
+        }
+
+        // --- Challenge 1 Logic ---
+        function renderCh1Text() {
+            const container = document.getElementById('ch1-headline-container');
+            const words = state.currentScenario.ch1.headline.split(' ');
+            
+            container.innerHTML = words.map((w, index) => 
+                `<span class="clickable-word" data-word="${w}" data-index="${index}">${w}</span>`
+            ).join(' ');
+
+            document.getElementById('ch1-article-container').innerText = state.currentScenario.ch1.article;
+        }
+
+        function ch1ProceedToStep2(intent) {
+            state.ch1ClickIntent = intent;
+            if (intent === 'No') updateMetrics(0, 0, 20);
+            else if (intent === 'Maybe') updateMetrics(0, 0, 10);
+            
+            document.getElementById('ch1-step1').classList.add('hidden');
+            document.getElementById('ch1-step2').classList.remove('hidden');
+            
+            // Enable interactivity on words
+            document.querySelectorAll('#ch1-headline-container .clickable-word').forEach(el => {
+                el.classList.add('interactive');
+                el.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+
+        function ch1Reveal() {
+            const selectedSpans = document.querySelectorAll('#ch1-headline-container .clickable-word.selected');
+            const selectedWords = Array.from(selectedSpans).map(el => el.dataset.word);
+            
+            let correctHits = 0;
+            const targetWords = state.currentScenario.ch1.exaggeratedWords;
+            
+            // Highlight logic
+            document.querySelectorAll('#ch1-headline-container .clickable-word').forEach(el => {
+                const word = el.dataset.word;
+                el.classList.remove('interactive');
+                // Remove listener (clone trick)
+                el.outerHTML = el.outerHTML; 
+            });
+
+            // Re-select for applying final styles after clone
+            document.querySelectorAll('#ch1-headline-container .clickable-word').forEach(el => {
+                const word = el.dataset.word;
+                if (targetWords.includes(word)) {
+                    el.classList.add('highlight-danger');
+                    if (selectedWords.includes(word)) correctHits++;
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+
+            // Score calculation
+            const accuracy = Math.round((correctHits / targetWords.length) * 100);
+            updateMetrics(accuracy > 50 ? 40 : 20, 0, 15);
+
+            document.getElementById('ch1-step2').classList.add('hidden');
+            
+            const reveal = document.getElementById('ch1-reveal');
+            document.getElementById('ch1-explanation').innerText = state.currentScenario.ch1.explanation;
+            document.getElementById('ch1-rewrite').innerText = state.currentScenario.ch1.rewrite;
+            
+            reveal.style.display = 'block';
+        }
+
+        // --- Challenge 2 Logic ---
+        function renderCh2Text() {
+            const container = document.getElementById('ch2-post-container');
+            const words = state.currentScenario.ch2.post.split(' ');
+            
+            container.innerHTML = words.map((w, index) => 
+                `<span class="clickable-word" data-word="${w}" data-index="${index}">${w}</span>`
+            ).join(' ');
+        }
+
+        function ch2ProceedToStep2(emotion) {
+            state.ch2EmotionGuess = emotion;
+            if (emotion === state.currentScenario.ch2.emotion) {
+                updateMetrics(0, 0, 20);
+            }
+            
+            document.getElementById('ch2-step1').classList.add('hidden');
+            document.getElementById('ch2-step2').classList.remove('hidden');
+            
+            document.querySelectorAll('#ch2-post-container .clickable-word').forEach(el => {
+                el.classList.add('interactive');
+                el.addEventListener('click', function() {
+                    this.classList.toggle('selected');
+                });
+            });
+        }
+
+        function ch2Reveal() {
+            const selectedSpans = document.querySelectorAll('#ch2-post-container .clickable-word.selected');
+            const selectedWords = Array.from(selectedSpans).map(el => el.dataset.word);
+            
+            let correctHits = 0;
+            const targetWords = state.currentScenario.ch2.targetWords;
+            
+            document.querySelectorAll('#ch2-post-container .clickable-word').forEach(el => {
+                const word = el.dataset.word;
+                el.classList.remove('interactive');
+                el.outerHTML = el.outerHTML; 
+            });
+
+            document.querySelectorAll('#ch2-post-container .clickable-word').forEach(el => {
+                const word = el.dataset.word;
+                if (targetWords.includes(word)) {
+                    el.classList.add('highlight-danger');
+                    if (selectedWords.includes(word)) correctHits++;
+                } else {
+                    el.classList.remove('selected');
+                }
+            });
+
+            const emotionalScore = Math.round((correctHits / targetWords.length) * 100);
+            updateMetrics(0, emotionalScore > 50 ? 40 : 20, 15);
+
+            document.getElementById('ch2-step2').classList.add('hidden');
+            
+            const reveal = document.getElementById('ch2-reveal');
+            document.getElementById('ch2-explanation').innerText = state.currentScenario.ch2.explanation;
+            document.getElementById('ch2-audience').innerText = state.currentScenario.ch2.audience;
+            document.getElementById('ch2-rewrite').innerText = state.currentScenario.ch2.rewrite;
+            
+            reveal.style.display = 'block';
+        }
+
+        // --- Final Dashboard Logic ---
+        function showDashboard() {
+            nextScreen('screen-dashboard');
+            
+            // Calculate final composite score
+            const finalScore = Math.round((state.metrics.headline + state.metrics.emotion + state.metrics.awareness) / 3) + 20; // +20 base for completing
+            document.getElementById('final-score').innerText = Math.min(100, finalScore) + "%";
+
+            // Determine biggest vulnerability based on metrics
+            let vulnerability = "None - Excellent Literacy";
+            if (state.metrics.emotion < state.metrics.headline) {
+                vulnerability = "Emotional Manipulation";
+            } else if (state.metrics.headline < state.metrics.emotion) {
+                vulnerability = "Headline Discrepancy";
+            }
+            document.getElementById('final-flag').innerText = vulnerability;
+        }
+
+        function resetApp() {
+            // Reset state
+            state.metrics = { headline: 0, emotion: 0, awareness: 0 };
+            document.getElementById('metric-headline').innerText = "--";
+            document.getElementById('metric-emotion').innerText = "--";
+            document.getElementById('metric-awareness').innerText = "--";
+            
+            // Hide reveals
+            document.getElementById('ch1-reveal').style.display = 'none';
+            document.getElementById('ch2-reveal').style.display = 'none';
+            
+            // Reset steps
+            document.getElementById('ch1-step1').classList.remove('hidden');
+            document.getElementById('ch1-step2').classList.add('hidden');
+            document.getElementById('ch2-step1').classList.remove('hidden');
+            document.getElementById('ch2-step2').classList.add('hidden');
+
+            // Roll new scenarios
+            init();
+
+            // Go to start
+            nextScreen('screen-ch1-intro');
+        }
+
+        // Start
+        init();
+    </script>
+</body>
+</html>
