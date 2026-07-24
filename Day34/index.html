@@ -1,0 +1,854 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Marketing Detective</title>
+    <!-- React & ReactDOM -->
+    <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #121212;
+            --surface-color: #1e1e1e;
+            --primary-color: #d97757; /* Default: Claude Orange */
+            --text-main: #e0e0e0;
+            --text-muted: #888888;
+            --board-bg: #2a2420;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-mono: 'Courier New', Courier, monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            font-family: var(--font-main);
+            overflow-x: hidden;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #root {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Utilities */
+        .glass-panel {
+            background: rgba(30, 30, 30, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+        }
+
+        .btn {
+            background: transparent;
+            color: var(--primary-color);
+            border: 2px solid var(--primary-color);
+            padding: 10px 24px;
+            font-size: 1rem;
+            font-weight: bold;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-family: var(--font-mono);
+        }
+
+        .btn:hover {
+            background: var(--primary-color);
+            color: var(--bg-color);
+            box-shadow: 0 0 15px var(--primary-color);
+        }
+
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: var(--font-mono);
+            font-weight: normal;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .text-glow {
+            text-shadow: 0 0 10px var(--primary-color);
+        }
+
+        /* Screens */
+        .screen-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 2rem;
+            animation: fadeIn 0.8s ease-out;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* Theme Selector */
+        .theme-options {
+            display: flex;
+            gap: 1.5rem;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .theme-card {
+            width: 150px;
+            height: 200px;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .theme-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .theme-card.active {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 20px var(--primary-color);
+        }
+
+        /* Corkboard */
+        .corkboard {
+            background-color: var(--board-bg);
+            background-image: 
+                radial-gradient(rgba(0,0,0,0.3) 1px, transparent 1px),
+                radial-gradient(rgba(0,0,0,0.3) 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            border: 12px solid #1a1614;
+            border-radius: 4px;
+            box-shadow: inset 0 0 40px rgba(0,0,0,0.8), 0 10px 30px rgba(0,0,0,0.9);
+            width: 100%;
+            max-width: 1200px;
+            height: 70vh;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+        }
+
+        /* Folders & Evidence */
+        .folder {
+            background: #d4a373;
+            border-radius: 4px 15px 4px 4px;
+            padding: 2rem;
+            color: #2c1e16;
+            box-shadow: 5px 5px 15px rgba(0,0,0,0.5);
+            position: relative;
+            max-width: 600px;
+            margin: 0 auto;
+            transform: rotate(-1deg);
+        }
+        
+        .folder::before {
+            content: '';
+            position: absolute;
+            top: -15px;
+            left: 0;
+            width: 120px;
+            height: 15px;
+            background: #c39262;
+            border-radius: 4px 4px 0 0;
+        }
+
+        .typewriter {
+            font-family: var(--font-mono);
+            line-height: 1.6;
+        }
+
+        .stamp {
+            color: #d9381e;
+            border: 4px solid #d9381e;
+            padding: 5px 15px;
+            font-size: 2rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            transform: rotate(-15deg);
+            display: inline-block;
+            opacity: 0.8;
+            font-family: 'Courier New', Courier, monospace;
+            border-radius: 4px;
+            mask-image: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="black" opacity="0.8"/><circle cx="20%" cy="30%" r="5%" fill="black" opacity="0.2"/><circle cx="70%" cy="80%" r="8%" fill="black" opacity="0.3"/></svg>');
+            -webkit-mask-image: url('data:image/svg+xml;utf8,<svg width="100%" height="100%" xmlns="http://www.w3.org/2000/svg"><rect width="100%" height="100%" fill="black" opacity="0.8"/><circle cx="20%" cy="30%" r="5%" fill="black" opacity="0.2"/><circle cx="70%" cy="80%" r="8%" fill="black" opacity="0.3"/></svg>');
+        }
+
+        /* Draggable Items */
+        .evidence-dock {
+            width: 300px;
+            background: rgba(0,0,0,0.6);
+            border-right: 2px solid rgba(255,255,255,0.1);
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            z-index: 10;
+        }
+
+        .investigation-area {
+            flex: 1;
+            position: relative;
+            padding: 2rem;
+        }
+
+        .evidence-item {
+            background: #fff9e6;
+            color: #1a1a1a;
+            padding: 1rem;
+            cursor: grab;
+            box-shadow: 2px 2px 10px rgba(0,0,0,0.3);
+            border-left: 4px solid var(--primary-color);
+            position: relative;
+            font-family: var(--font-mono);
+            font-size: 0.9rem;
+            transition: transform 0.2s;
+        }
+        
+        .evidence-item:active {
+            cursor: grabbing;
+        }
+
+        .evidence-item:hover {
+            transform: scale(1.02);
+        }
+
+        .push-pin {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #d9381e;
+            position: absolute;
+            top: 5px;
+            left: 50%;
+            transform: translateX(-50%);
+            box-shadow: inset -2px -2px 4px rgba(0,0,0,0.5), 2px 2px 4px rgba(0,0,0,0.4);
+        }
+
+        .pin-shadow {
+            width: 2px;
+            height: 10px;
+            background: rgba(0,0,0,0.5);
+            position: absolute;
+            top: 15px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: -1;
+        }
+
+        .sticky-note {
+            background: #fdf5c9;
+            color: #333;
+            padding: 15px;
+            box-shadow: 3px 3px 10px rgba(0,0,0,0.4);
+            font-family: 'Comic Sans MS', cursive, sans-serif;
+            position: absolute;
+            width: 200px;
+            transform: rotate(2deg);
+        }
+
+        /* Suspects / Quiz */
+        .suspect-list {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            margin-top: 2rem;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        .suspect-btn {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.2);
+            color: var(--text-main);
+            padding: 1rem;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: var(--font-mono);
+            border-radius: 4px;
+        }
+
+        .suspect-btn:hover {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--primary-color);
+        }
+
+        /* Animations */
+        @keyframes stampAnim {
+            0% { transform: scale(3) rotate(-15deg); opacity: 0; }
+            50% { transform: scale(0.9) rotate(-15deg); opacity: 1; }
+            100% { transform: scale(1) rotate(-15deg); opacity: 1; }
+        }
+        .anim-stamp {
+            animation: stampAnim 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards;
+        }
+
+        /* Progress indicator */
+        .progress-bar {
+            width: 100%;
+            height: 4px;
+            background: rgba(255,255,255,0.1);
+            position: fixed;
+            top: 0;
+            left: 0;
+            z-index: 100;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary-color);
+            transition: width 0.5s ease;
+        }
+
+        .clue-revealed {
+            background: rgba(255,255,255,0.05);
+            border: 1px dashed var(--primary-color);
+            padding: 10px;
+            margin-top: 10px;
+            color: var(--primary-color);
+            font-family: var(--font-mono);
+        }
+
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect, useRef } = React;
+
+        // Data: 10 Marketing Cases
+        const marketingCases = [
+            {
+                id: 1,
+                company: "TechNova Solutions",
+                industry: "B2B Enterprise Software",
+                objective: "Lead Generation for new $50k/yr ERP system",
+                audience: "C-Level Executives, IT Directors",
+                channels: "TikTok Ads, Snapchat, Instagram Influencers",
+                budget: "$150,000",
+                metrics: { reach: "12M", ctr: "0.1%", engagement: "Extremely High", conversions: 0, sales: "$0" },
+                comments: ["Wow cool dance!", "What is an ERP?", "First!", "My dad works in computers."],
+                social: "Campaign went viral on TikTok, generating millions of views but zero qualified pipeline.",
+                mistake: "Severe Platform-Audience Mismatch",
+                clues: ["Traffic demographic is 85% under the age of 24.", "Zero downloads of the technical whitepaper.", "High engagement on platforms not typically used for enterprise procurement."],
+                explanation: "Selling a $50k B2B enterprise product on platforms dominated by Gen Z and younger audiences results in wasted ad spend. The audience reached has no purchasing power or intent for this product.",
+                improvements: "Shift budget to LinkedIn Ads, industry-specific podcasts, and intent-based search (Google Ads). Focus on authoritative content rather than viral trends.",
+                suspects: [
+                    "Website crashed from too much traffic",
+                    "Severe Platform-Audience Mismatch",
+                    "The product pricing was too low",
+                    "Failed to use a discount code"
+                ]
+            },
+            {
+                id: 2,
+                company: "BeanBrew Roasters",
+                industry: "Local Brick-and-Mortar Cafe",
+                objective: "Increase foot traffic to new downtown location",
+                audience: "Local office workers, students within 2 miles",
+                channels: "National Google Search Ads, Global Facebook Campaigns",
+                budget: "$15,000",
+                metrics: { reach: "500K", ctr: "2.5%", engagement: "Moderate", conversions: "50 online inquiries", sales: "Minimal in-store lift" },
+                comments: ["Wish you guys were in New York!", "Do you ship to London?", "Looks tasty."],
+                social: "Great follower growth globally, but the cafe remains empty.",
+                mistake: "Failure to use Geo-Targeting",
+                clues: ["Website analytics show traffic from 40 different countries.", "Users asking for shipping options (they don't sell online).", "Ad settings left default location to 'Worldwide'."],
+                explanation: "For a physical location reliant on foot traffic, spending ad budget on national or global audiences is a complete waste. Local businesses must strictly geo-fence their campaigns.",
+                improvements: "Restrict ad targeting to a 3-5 mile radius around the cafe. Utilize local SEO, Google Business Profile optimization, and local community engagement.",
+                suspects: [
+                    "Failure to use Geo-Targeting",
+                    "Coffee photos were low resolution",
+                    "Ad copy was too long",
+                    "Ignored TikTok marketing"
+                ]
+            },
+            {
+                id: 3,
+                company: "FitGlow Apparel",
+                industry: "DTC Fitness Clothing",
+                objective: "Drive Q3 sales via influencer partnerships",
+                audience: "Fitness enthusiasts, 18-35",
+                channels: "Instagram Mega-Influencers (1M+ followers)",
+                budget: "$250,000",
+                metrics: { reach: "10M", ctr: "0.05%", engagement: "High", conversions: 12, sales: "$1,200" },
+                comments: ["Link is broken?", "Where do I buy this?", "I get a 404 error."],
+                social: "Influencers posted great content, hype was high, but revenue was abysmal.",
+                mistake: "Broken Conversion Funnel (Dead Links)",
+                clues: ["Surge in 404 Error pages in Google Analytics.", "Comments repeatedly mentioning an inability to purchase.", "UTM parameters were configured incorrectly causing server errors."],
+                explanation: "The most brilliant creative and targeting will fail if the technical conversion funnel is broken. Launching a massive campaign without testing the destination links resulted in catastrophic budget loss.",
+                improvements: "Implement rigorous QA processes before campaign launch. Test all links on multiple devices. Use link-monitoring software to alert immediately if a campaign URL goes down.",
+                suspects: [
+                    "Influencers faked their followers",
+                    "Product was too expensive",
+                    "Broken Conversion Funnel (Dead Links)",
+                    "Posted at the wrong time of day"
+                ]
+            },
+            {
+                id: 4,
+                company: "LuxeTime Watches",
+                industry: "Luxury Goods",
+                objective: "Clear out old inventory",
+                audience: "High-net-worth individuals, watch collectors",
+                channels: "Email Marketing, Display Ads",
+                budget: "$40,000",
+                metrics: { reach: "100K", ctr: "5%", engagement: "High", conversions: 500, sales: "$250,000" },
+                comments: ["Wow, 80% off? Buying 3!", "Is this a scam?", "I paid full price yesterday, I am furious.", "Guess it's not a premium brand anymore."],
+                social: "Brand sentiment tanked. Core collectors are abandoning the brand.",
+                mistake: "Brand Dilution via Extreme Discounting",
+                clues: ["Long-term customers requesting refunds.", "Brand sentiment analysis shifted from 'exclusive' to 'cheap'.", "High conversion rate but massive loss of lifetime value from VIPs."],
+                explanation: "Luxury brands rely on scarcity and prestige. By offering an 80% discount publicly to clear inventory, LuxeTime destroyed its brand equity and alienated its most valuable customers.",
+                improvements: "Use private, invite-only sales for VIPs to clear inventory without public brand damage. Never discount core luxury products so heavily in public channels.",
+                suspects: [
+                    "Email subject lines were not catchy enough",
+                    "Brand Dilution via Extreme Discounting",
+                    "Display ads used the wrong colors",
+                    "Inventory wasn't cleared fast enough"
+                ]
+            },
+            {
+                id: 5,
+                company: "EcoClean Home",
+                industry: "CPG (Cleaning Products)",
+                objective: "Launch new '100% Green' product line",
+                audience: "Environmentally conscious consumers",
+                channels: "PR, Social Media, YouTube Ads",
+                budget: "$80,000",
+                metrics: { reach: "2M", ctr: "1.2%", engagement: "Very High (Negative)", conversions: 40, sales: "$600" },
+                comments: ["This has microplastics in it!", "Read the label, it's greenwashing.", "Boycotting this brand."],
+                social: "A major environmental influencer debunked the '100% Green' claim in a video that got 3M views.",
+                mistake: "Greenwashing / False Claims",
+                clues: ["PR disaster triggered by an influencer investigation.", "Product ingredients did not match marketing claims.", "Refund requests spiked simultaneously with negative comments."],
+                explanation: "Modern consumers, especially in the eco-conscious space, will aggressively fact-check claims. Marketing a product as '100% Green' when it contains harmful chemicals is fatal to brand trust.",
+                improvements: "Ensure absolute alignment between marketing claims and product reality. Prioritize transparency. Apologize, recall the misleading campaign, and highlight actual, verified eco-friendly practices.",
+                suspects: [
+                    "YouTube ads were unskippable",
+                    "Didn't spend enough on PR",
+                    "Greenwashing / False Claims",
+                    "Packaging was the wrong shade of green"
+                ]
+            },
+            {
+                id: 6,
+                company: "PetPals Nutrition",
+                industry: "Pet Food E-commerce",
+                objective: "Customer Acquisition",
+                audience: "Dog owners",
+                channels: "Facebook Ads, Native Advertising",
+                budget: "$60,000",
+                metrics: { reach: "4M", ctr: "12%", engagement: "High", conversions: 0, sales: "$0" },
+                comments: ["I clicked to see the cute puppy, where is it?", "This is an ad for dog food? I thought it was a news article.", "Clickbait."],
+                social: "High traffic, massive bounce rate (99%).",
+                mistake: "Optimizing for Vanity Metrics (Clickbait)",
+                clues: ["Ad creative was 'You won't believe what this puppy did!' with no mention of dog food.", "12% CTR is abnormally high, but 0% conversion rate.", "Bounce rate on the landing page is near 100% with average time on page < 2 seconds."],
+                explanation: "The campaign optimized entirely for Click-Through Rate (CTR) using misleading clickbait. While it drove massive traffic, the intent was zero. Traffic without intent does not generate revenue.",
+                improvements: "Align ad creative closely with the product and offer. Accept a lower CTR in exchange for highly qualified traffic. A/B test based on Cost Per Acquisition (CPA), not just CTR.",
+                suspects: [
+                    "Landing page loaded too slowly",
+                    "Optimizing for Vanity Metrics (Clickbait)",
+                    "Targeted cat owners by mistake",
+                    "Used the wrong ad format"
+                ]
+            },
+            {
+                id: 7,
+                company: "EduSmart",
+                industry: "EdTech / Online Courses",
+                objective: "Enroll students in new coding bootcamp",
+                audience: "Career changers, tech beginners",
+                channels: "Search Ads, LinkedIn, Email",
+                budget: "$90,000",
+                metrics: { reach: "1M", ctr: "3%", engagement: "Good", conversions: 15, sales: "$15,000" },
+                comments: ["Great syllabus, but how much is it?", "Got to checkout and saw $500 hidden fees.", "Too expensive once you add it all up."],
+                social: "Users complaining on Twitter about 'scammy pricing'.",
+                mistake: "Hidden Pricing / Lack of Transparency",
+                clues: ["Cart abandonment rate is 95% at the final step.", "Ads promote '$99/month' but require a $1000 upfront deposit not mentioned until checkout.", "Customer support flooded with pricing questions."],
+                explanation: "Hiding the true cost of a product until the final stage of checkout breaks trust and causes massive cart abandonment. The friction outweighs the initial desire generated by the marketing.",
+                improvements: "Be transparent with pricing on the landing page. If it's a high-ticket item, focus marketing on the ROI and value, rather than trying to trick users into the funnel with artificially low numbers.",
+                suspects: [
+                    "Hidden Pricing / Lack of Transparency",
+                    "Course syllabus was too difficult",
+                    "Emails went to spam",
+                    "LinkedIn ads are too expensive"
+                ]
+            },
+            {
+                id: 8,
+                company: "SwiftBite Delivery",
+                industry: "Food Delivery App",
+                objective: "Aggressive user acquisition for new city launch",
+                audience: "Urban millennials, busy professionals",
+                channels: "Direct Mail, Influencers, In-App Promos",
+                budget: "$500,000",
+                metrics: { reach: "2M", ctr: "8%", engagement: "Viral", conversions: 100000, sales: "-$250,000 (Loss)" },
+                comments: ["OMG you can stack the codes!", "Free food all week, thanks SwiftBite!", "I just got $50 of sushi for $2."],
+                social: "Reddit and TikTok exploded with tutorials on how to exploit the promo system.",
+                mistake: "Promo Code Stacking / Poor Campaign Mechanics",
+                clues: ["Viral spread on deal-hunting forums (Reddit/Slickdeals).", "Average order value dropped by 90%.", "The campaign generated massive volume but negative margin on every order."],
+                explanation: "A technical oversight allowed users to combine 'New User' discounts with 'City Launch' codes and 'Referral' credits. The campaign was highly successful at acquisition, but financially ruinous due to broken promotional logic.",
+                improvements: "Implement strict logic in the backend preventing coupon stacking. Always set a 'Maximum Discount Value' or 'Minimum Order Value' for promotional codes.",
+                suspects: [
+                    "Direct mail is an outdated channel",
+                    "App crashed from too many users",
+                    "Promo Code Stacking / Poor Campaign Mechanics",
+                    "Food was delivered cold"
+                ]
+            },
+            {
+                id: 9,
+                company: "Zenith Financial",
+                industry: "Banking / Fintech",
+                objective: "Attract Gen Z to new savings account",
+                audience: "Ages 18-24",
+                channels: "Twitter (X), TikTok",
+                budget: "$120,000",
+                metrics: { reach: "8M", ctr: "0.2%", engagement: "High (Mockery)", conversions: 120, sales: "N/A" },
+                comments: ["Silence, brand.", "How do you do, fellow kids?", "This meme is from 2014.", "Cringe."],
+                social: "Brand went viral as a laughingstock. Multiple compilation videos mocking the ads.",
+                mistake: "Inauthentic Voice / Tone Deafness",
+                clues: ["Ad copy used outdated slang ('YOLO', 'Much savings, very wow').", "Comments section universally negative/mocking.", "Attempts by the corporate account to 'clap back' made it worse."],
+                explanation: "When a highly regulated, traditional institution attempts to use internet culture without understanding it, it comes across as inauthentic and 'cringe'. Gen Z has a highly tuned radar for corporate pandering.",
+                improvements: "Adopt a transparent, helpful tone rather than trying to be a meme page. If using humor or trends, hire digital natives to manage the creative and give them autonomy.",
+                suspects: [
+                    "Interest rates were too low",
+                    "Inauthentic Voice / Tone Deafness",
+                    "Twitter is the wrong platform for finance",
+                    "Budget was too small to be effective"
+                ]
+            },
+            {
+                id: 10,
+                company: "GamerGear Pro",
+                industry: "Consumer Electronics",
+                objective: "Launch flagship gaming mouse",
+                audience: "PC Gamers, Esports fans",
+                channels: "Twitch Sponsorships, YouTube Pre-roll",
+                budget: "$300,000",
+                metrics: { reach: "15M", ctr: "4%", engagement: "High", conversions: 5000, sales: "$400,000" },
+                comments: ["Double-clicking issue out of the box.", "Sensor spins out, do not buy.", "Ads are everywhere but the product is broken.", "Returning mine tomorrow."],
+                social: "Tech reviewers are posting 1-star reviews citing hardware failures, while ads keep running.",
+                mistake: "Ignoring Product Reality / Scaling a Defective Product",
+                clues: ["Return rate spiked to 45% within week one.", "Marketing team doubled ad spend despite customer support being overwhelmed.", "Influencers who were sponsored had to issue apologies to their audiences."],
+                explanation: "Marketing cannot fix a fundamentally broken product. Continuing to pour ad budget into promoting a product with known, widespread defects destroys long-term brand trust and wastes money on guaranteed returns.",
+                improvements: "Pause all marketing immediately upon discovering a widespread hardware flaw. Shift focus to customer support, issue a recall or fix, and use marketing later for a 'We fixed it' redemption campaign.",
+                suspects: [
+                    "Twitch sponsorships are ineffective",
+                    "Ignoring Product Reality / Scaling a Defective Product",
+                    "Mouse was the wrong color",
+                    "Did not use Facebook ads"
+                ]
+            }
+        ];
+
+        // Shuffle array helper
+        const shuffle = (array) => {
+            const newArr = [...array];
+            for (let i = newArr.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArr[i], newArr[j]] = [newArr[j], newArr[i]];
+            }
+            return newArr;
+        };
+
+        // Themes
+        const themes = [
+            { id: 'claude', name: 'Claude Orange', primary: '#d97757', bg: '#121212', board: '#2a2420' },
+            { id: 'neon', name: 'Cyber Noir', primary: '#00ffcc', bg: '#0a0a0a', board: '#0a192f' },
+            { id: 'classic', name: 'Classic Gumshoe', primary: '#cda434', bg: '#1c1c1c', board: '#3e2723' },
+            { id: 'blood', name: 'Crimson Thriller', primary: '#ff3333', bg: '#000000', board: '#1a0000' }
+        ];
+
+        // Components
+        const ThemeSelector = ({ onSelect }) => (
+            <div className="screen-container">
+                <h1 className="text-glow" style={{marginBottom: '1rem'}}>MARKETING DETECTIVE</h1>
+                <p style={{color: 'var(--text-muted)', marginBottom: '2rem'}}>Select your visual atmosphere before we begin the investigation.</p>
+                
+                <div className="theme-options">
+                    {themes.map(t => (
+                        <div key={t.id} className="theme-card glass-panel" 
+                             style={{borderBottom: `4px solid ${t.primary}`}}
+                             onClick={() => onSelect(t)}>
+                            <div style={{width: '40px', height: '40px', borderRadius: '50%', background: t.primary, marginBottom: '1rem'}}></div>
+                            <h3 style={{fontSize: '0.9rem', textAlign: 'center'}}>{t.name}</h3>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+
+        const Briefing = ({ caseData, onNext }) => (
+            <div className="screen-container">
+                <div className="folder">
+                    <h2 style={{borderBottom: '2px solid #a67b5b', paddingBottom: '10px', marginBottom: '20px'}}>CONFIDENTIAL BRIEFING</h2>
+                    <div className="typewriter">
+                        <p><strong>CLIENT:</strong> {caseData.company}</p>
+                        <p><strong>INDUSTRY:</strong> {caseData.industry}</p>
+                        <p><strong>OBJECTIVE:</strong> {caseData.objective}</p>
+                        <p><strong>BUDGET:</strong> {caseData.budget}</p>
+                        <br/>
+                        <p><strong>SITUATION:</strong></p>
+                        <p>Agent, we have a marketing disaster on our hands. A massive amount of capital has been deployed, but the desired outcome has vanished without a trace.</p>
+                        <br/>
+                        <p>Your job is to analyze the evidence on the investigation board, uncover the clues, and deduce the primary marketing mistake.</p>
+                    </div>
+                    
+                    <div style={{marginTop: '2rem', textAlign: 'right'}}>
+                        <button className="btn" style={{color: '#2c1e16', borderColor: '#2c1e16'}} onClick={onNext}>
+                            OPEN INVESTIGATION BOARD
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+
+        const InvestigationBoard = ({ caseData, onSolveRequest }) => {
+            const [placedItems, setPlacedItems] = useState([]);
+            const [revealedClues, setRevealedClues] = useState([]);
+
+            const evidenceItems = [
+                { id: 'metrics', type: 'doc', title: 'Campaign Analytics', content: `Reach: ${caseData.metrics.reach}\nCTR: ${caseData.metrics.ctr}\nConv: ${caseData.metrics.conversions}\nSales: ${caseData.metrics.sales}` },
+                { id: 'audience', type: 'note', title: 'Target vs Actual', content: `Target: ${caseData.audience}\nChannels Used: ${caseData.channels}` },
+                { id: 'comments', type: 'doc', title: 'Customer Feedback', content: caseData.comments.map(c => `"${c}"`).join('\n') },
+                { id: 'social', type: 'note', title: 'Social Listening', content: caseData.social }
+            ];
+
+            const handleDragStart = (e, item) => {
+                e.dataTransfer.setData('text/plain', item.id);
+            };
+
+            const handleDrop = (e) => {
+                e.preventDefault();
+                const id = e.dataTransfer.getData('text/plain');
+                if (!placedItems.includes(id)) {
+                    setPlacedItems([...placedItems, id]);
+                    
+                    // Reveal a clue progressively based on how many items are placed
+                    if (revealedClues.length < 3) {
+                        setRevealedClues([...revealedClues, caseData.clues[revealedClues.length]]);
+                    }
+                }
+            };
+
+            const handleDragOver = (e) => e.preventDefault();
+
+            return (
+                <div style={{display: 'flex', flexDirection: 'column', height: '100vh', padding: '2rem'}}>
+                    <div style={{display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem'}}>
+                        <h2 className="text-glow">INVESTIGATION BOARD: {caseData.company}</h2>
+                        <button className="btn" onClick={onSolveRequest} disabled={placedItems.length < 2}>
+                            I'M READY TO SOLVE
+                        </button>
+                    </div>
+                    
+                    <div className="corkboard">
+                        <div className="evidence-dock">
+                            <h3 style={{fontSize: '1rem', borderBottom: '1px solid rgba(255,255,255,0.2)', paddingBottom: '0.5rem'}}>EVIDENCE LOCKER</h3>
+                            <p style={{fontSize: '0.8rem', color: 'var(--text-muted)'}}>Drag items to the board to analyze them.</p>
+                            
+                            {evidenceItems.filter(item => !placedItems.includes(item.id)).map(item => (
+                                <div key={item.id} 
+                                     className="evidence-item"
+                                     draggable 
+                                     onDragStart={(e) => handleDragStart(e, item)}>
+                                    <strong>{item.title}</strong>
+                                </div>
+                            ))}
+
+                            <div style={{marginTop: 'auto'}}>
+                                <h3 style={{fontSize: '0.9rem', color: 'var(--primary-color)'}}>ANALYSIS ENGINE</h3>
+                                {revealedClues.map((clue, idx) => (
+                                    <div key={idx} className="clue-revealed">
+                                        <small>CLUE {idx + 1}:</small><br/>
+                                        {clue}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        <div className="investigation-area" onDrop={handleDrop} onDragOver={handleDragOver}>
+                            {placedItems.length === 0 && (
+                                <div style={{position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', opacity: 0.3, textAlign: 'center', pointerEvents: 'none'}}>
+                                    <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                    <h3>DROP EVIDENCE HERE</h3>
+                                </div>
+                            )}
+
+                            {placedItems.map((id, index) => {
+                                const item = evidenceItems.find(i => i.id === id);
+                                const isNote = item.type === 'note';
+                                const style = {
+                                    position: 'absolute',
+                                    top: `${20 + (index * 15)}%`,
+                                    left: `${10 + (index * 25)}%`,
+                                    zIndex: index,
+                                    width: isNote ? '220px' : '300px'
+                                };
+                                
+                                return (
+                                    <div key={id} className={isNote ? 'sticky-note' : 'evidence-item'} style={style}>
+                                        <div className="pin-shadow"></div>
+                                        <div className="push-pin"></div>
+                                        <strong style={{display: 'block', marginBottom: '8px', borderBottom: '1px solid rgba(0,0,0,0.1)'}}>{item.title}</strong>
+                                        <pre style={{whiteSpace: 'pre-wrap', fontFamily: 'inherit', fontSize: '0.9rem'}}>{item.content}</pre>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const SolveScreen = ({ caseData, onResult }) => {
+            const [suspects, setSuspects] = useState([]);
+
+            useEffect(() => {
+                setSuspects(shuffle(caseData.suspects));
+            }, [caseData]);
+
+            return (
+                <div className="screen-container">
+                    <h2 className="text-glow" style={{marginBottom: '2rem'}}>IDENTIFY THE CULPRIT</h2>
+                    <p style={{marginBottom: '2rem', maxWidth: '600px', textAlign: 'center'}}>
+                        Based on the evidence, what was the primary marketing mistake that killed the campaign?
+                    </p>
+
+                    <div className="suspect-list">
+                        {suspects.map((suspect, idx) => (
+                            <button key={idx} className="suspect-btn" onClick={() => onResult(suspect === caseData.mistake)}>
+                                {suspect}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            );
+        };
+
+        const ReportScreen = ({ caseData, success, onPlayAgain }) => {
+            return (
+                <div className="screen-container">
+                    <div className="glass-panel" style={{padding: '3rem', maxWidth: '800px', position: 'relative'}}>
+                        {success ? (
+                            <div className="stamp anim-stamp" style={{position: 'absolute', top: '20px', right: '20px'}}>CASE CLOSED</div>
+                        ) : (
+                            <div className="stamp anim-stamp" style={{position: 'absolute', top: '20px', right: '20px', color: '#ff3333', borderColor: '#ff3333'}}>CASE FAILED</div>
+                        )}
+                        
+                        <h2 className="text-glow" style={{marginBottom: '1rem'}}>
+                            {success ? 'EXCELLENT DETECTIVE WORK' : 'YOU MISSED THE MARK'}
+                        </h2>
+                        
+                        <div style={{marginTop: '2rem'}}>
+                            <h3 style={{color: 'var(--primary-color)'}}>THE REAL MISTAKE:</h3>
+                            <p style={{fontSize: '1.2rem', fontWeight: 'bold', margin: '0.5rem 0 1.5rem 0'}}>{caseData.mistake}</p>
+                            
+                            <h3 style={{color: 'var(--primary-color)'}}>EXPLANATION:</h3>
+                            <p style={{lineHeight: '1.6', marginBottom: '1.5rem'}}>{caseData.explanation}</p>
+                            
+                            <h3 style={{color: 'var(--primary-color)'}}>SUGGESTED IMPROVEMENTS:</h3>
+                            <p style={{lineHeight: '1.6', marginBottom: '2rem', padding: '1rem', background: 'rgba(255,255,255,0.05)', borderRadius: '4px'}}>
+                                {caseData.improvements}
+                            </p>
+                        </div>
+                        
+                        <div style={{textAlign: 'center'}}>
+                            <button className="btn" onClick={onPlayAgain}>
+                                TAKE ANOTHER CASE
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const App = () => {
+            const [screen, setScreen] = useState('theme'); // theme, briefing, board, solve, report
+            const [currentCase, setCurrentCase] = useState(null);
+            const [success, setSuccess] = useState(false);
+            const [progress, setProgress] = useState(0);
+
+            // Set progress bar
+            useEffect(() => {
+                const map = { 'theme': 0, 'briefing': 25, 'board': 50, 'solve': 75, 'report': 100 };
+                setProgress(map[screen] || 0);
+            }, [screen]);
+
+            const applyTheme = (theme) => {
+                document.documentElement.style.setProperty('--primary-color', theme.primary);
+                document.documentElement.style.setProperty('--bg-color', theme.bg);
+                document.documentElement.style.setProperty('--board-bg', theme.board);
+                
+                // Load random case
+                const randomCase = marketingCases[Math.floor(Math.random() * marketingCases.length)];
+                setCurrentCase(randomCase);
+                setScreen('briefing');
+            };
+
+            const loadNewCase = () => {
+                const randomCase = marketingCases[Math.floor(Math.random() * marketingCases.length)];
+                setCurrentCase(randomCase);
+                setScreen('briefing');
+            };
+
+            return (
+                <>
+                    <div className="progress-bar">
+                        <div className="progress-fill" style={{width: `${progress}%`}}></div>
+                    </div>
+
+                    {screen === 'theme' && <ThemeSelector onSelect={applyTheme} />}
+                    {screen === 'briefing' && <Briefing caseData={currentCase} onNext={() => setScreen('board')} />}
+                    {screen === 'board' && <InvestigationBoard caseData={currentCase} onSolveRequest={() => setScreen('solve')} />}
+                    {screen === 'solve' && (
+                        <SolveScreen 
+                            caseData={currentCase} 
+                            onResult={(isCorrect) => {
+                                setSuccess(isCorrect);
+                                setScreen('report');
+                            }} 
+                        />
+                    )}
+                    {screen === 'report' && <ReportScreen caseData={currentCase} success={success} onPlayAgain={loadNewCase} />}
+                </>
+            );
+        };
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>
