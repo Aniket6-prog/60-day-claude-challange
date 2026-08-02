@@ -1,0 +1,1005 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ML Studio: Model Training & Evaluation</title>
+  <style>
+    :root {
+      --bg-dark: #0b0f19;
+      --bg-card: #151c2c;
+      --bg-card-hover: #1e293b;
+      --border: #233148;
+      --text-main: #f1f5f9;
+      --text-muted: #94a3b8;
+      --accent-blue: #38bdf8;
+      --accent-purple: #818cf8;
+      --accent-green: #34d399;
+      --accent-amber: #fbbf24;
+      --accent-red: #f87171;
+      --font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+      --font-mono: 'Consolas', 'Monaco', 'Courier New', monospace;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background-color: var(--bg-dark);
+      color: var(--text-main);
+      font-family: var(--font-sans);
+      line-height: 1.6;
+      display: flex;
+      min-height: 100vh;
+    }
+
+    /* Sidebar */
+    aside {
+      width: 280px;
+      background: #090d16;
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      position: fixed;
+      height: 100vh;
+      z-index: 10;
+    }
+
+    .brand {
+      padding: 1.5rem;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--accent-blue);
+    }
+
+    .nav-list {
+      list-style: none;
+      padding: 1rem 0.5rem;
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+
+    .nav-item {
+      padding: 0.75rem 1rem;
+      margin-bottom: 0.25rem;
+      border-radius: 8px;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.2s;
+    }
+
+    .nav-item:hover {
+      background: var(--bg-card);
+      color: var(--text-main);
+    }
+
+    .nav-item.active {
+      background: rgba(56, 189, 248, 0.1);
+      color: var(--accent-blue);
+      font-weight: 600;
+      border-left: 3px solid var(--accent-blue);
+    }
+
+    .nav-item.locked {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .user-profile {
+      padding: 1rem;
+      border-top: 1px solid var(--border);
+      background: rgba(15, 23, 42, 0.6);
+    }
+
+    .xp-bar-bg {
+      height: 6px;
+      background: var(--border);
+      border-radius: 3px;
+      overflow: hidden;
+      margin-top: 0.5rem;
+    }
+
+    .xp-bar-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-blue), var(--accent-purple));
+      width: 0%;
+      transition: width 0.4s ease;
+    }
+
+    /* Main Content Area */
+    main {
+      margin-left: 280px;
+      flex-grow: 1;
+      padding: 2.5rem;
+      max-width: 1100px;
+    }
+
+    header {
+      margin-bottom: 2rem;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 1.5rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+    }
+
+    h1 { font-size: 2rem; margin-bottom: 0.5rem; color: #fff; }
+    h2 { font-size: 1.4rem; margin: 1.5rem 0 1rem 0; color: var(--accent-blue); }
+    h3 { font-size: 1.1rem; margin: 1.2rem 0 0.6rem 0; color: var(--text-main); }
+
+    .subtitle { color: var(--text-muted); font-size: 0.95rem; }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1.5rem; }
+
+    /* Interactive Diagram Containers */
+    .diagram-container {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 250px;
+      position: relative;
+    }
+
+    /* SVG Graphics Styling */
+    svg.interactive-graph {
+      width: 100%;
+      max-width: 500px;
+      height: 220px;
+    }
+
+    /* Sliders & Controls */
+    .control-group {
+      width: 100%;
+      margin-top: 1rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+    }
+
+    .slider-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    input[type=range] {
+      width: 100%;
+      accent-color: var(--accent-blue);
+    }
+
+    /* Quiz Styling */
+    .quiz-option {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.8rem 1rem;
+      margin-bottom: 0.5rem;
+      cursor: pointer;
+      transition: all 0.2s;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .quiz-option:hover {
+      border-color: var(--accent-blue);
+      background: var(--bg-card-hover);
+    }
+
+    .quiz-option.selected { border-color: var(--accent-purple); background: rgba(129, 140, 248, 0.1); }
+    .quiz-option.correct { border-color: var(--accent-green); background: rgba(52, 211, 153, 0.1); }
+    .quiz-option.incorrect { border-color: var(--accent-red); background: rgba(248, 113, 113, 0.1); }
+
+    .btn {
+      background: var(--accent-blue);
+      color: #000;
+      border: none;
+      padding: 0.6rem 1.2rem;
+      border-radius: 6px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: opacity 0.2s;
+    }
+
+    .btn:hover { opacity: 0.9; }
+    .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.75rem;
+      text-align: left;
+    }
+
+    th { background: rgba(255,255,255,0.03); color: var(--accent-blue); }
+
+    /* Code Block */
+    pre {
+      background: var(--bg-dark);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 1rem;
+      font-family: var(--font-mono);
+      font-size: 0.85rem;
+      color: #e2e8f0;
+      overflow-x: auto;
+    }
+
+    /* Badges & Callouts */
+    .badge {
+      display: inline-block;
+      padding: 0.25rem 0.5rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      font-weight: 600;
+    }
+
+    .badge-blue { background: rgba(56, 189, 248, 0.15); color: var(--accent-blue); }
+    .badge-green { background: rgba(52, 211, 153, 0.15); color: var(--accent-green); }
+
+    .callout {
+      border-left: 4px solid var(--accent-purple);
+      background: rgba(129, 140, 248, 0.05);
+      padding: 1rem;
+      border-radius: 0 8px 8px 0;
+      margin: 1rem 0;
+      font-size: 0.9rem;
+    }
+
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+
+    @media (max-width: 768px) {
+      aside { width: 100%; height: auto; position: relative; }
+      body { flex-direction: column; }
+      main { margin-left: 0; padding: 1rem; }
+      .grid-2 { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation Sidebar -->
+  <aside>
+    <div class="brand">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+      </svg>
+      <span>ML Studio AI</span>
+    </div>
+    <ul class="nav-list">
+      <li class="nav-item active" onclick="switchTab('intro')">
+        <span>🎯 Overview</span>
+      </li>
+      <li class="nav-item" id="nav-mod1" onclick="switchTab('mod1')">
+        <span>1. Split Strategy</span>
+        <span id="badge-mod1">🔒</span>
+      </li>
+      <li class="nav-item" id="nav-mod2" onclick="switchTab('mod2')">
+        <span>2. Optimization</span>
+        <span id="badge-mod2">🔒</span>
+      </li>
+      <li class="nav-item" id="nav-mod3" onclick="switchTab('mod3')">
+        <span>3. Classification Metrics</span>
+        <span id="badge-mod3">🔒</span>
+      </li>
+      <li class="nav-item" id="nav-mod4" onclick="switchTab('mod4')">
+        <span>4. Regression Metrics</span>
+        <span id="badge-mod4">🔒</span>
+      </li>
+      <li class="nav-item" id="nav-challenge" onclick="switchTab('challenge')">
+        <span>🏆 Capstone Challenge</span>
+        <span id="badge-challenge">🔒</span>
+      </li>
+      <li class="nav-item" onclick="switchTab('cheatsheet')">
+        <span>📋 Cheatsheet & Summary</span>
+      </li>
+      <li class="nav-item" onclick="switchTab('resources')">
+        <span>📖 Further Resources</span>
+      </li>
+    </ul>
+    <div class="user-profile">
+      <div style="display: flex; justify-content: space-between; font-size: 0.85rem;">
+        <span>Progress</span>
+        <span id="xp-text" style="color: var(--accent-blue); font-weight: 600;">0 XP</span>
+      </div>
+      <div class="xp-bar-bg">
+        <div class="xp-bar-fill" id="xp-fill"></div>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main View Area -->
+  <main>
+    <header>
+      <div>
+        <h1 id="page-title">Model Training & Evaluation Studio</h1>
+        <p class="subtitle">Master data splitting, loss functions, optimization, and validation metrics through interactive labs.</p>
+      </div>
+      <button class="btn" style="background: var(--bg-card); color: var(--text-main); border: 1px solid var(--border)" onclick="window.print()">Print Notes</button>
+    </header>
+
+    <!-- SECTION: INTRODUCTION -->
+    <div id="intro" class="tab-content active">
+      <div class="card">
+        <h2>Welcome to the Machine Learning Mastery Path</h2>
+        <p>This interactive studio offers an in-depth, hands-on exploration of model training mechanics, validation strategies, and performance diagnostics. Designed for data scientists, machine learning engineers, and researchers, this curriculum covers key foundational concepts necessary to build robust, generalization-ready models.</p>
+        
+        <div class="grid-2" style="margin-top: 1.5rem;">
+          <div>
+            <h3>🎯 Learning Objectives</h3>
+            <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.9rem;">
+              <li>Execute leakage-free train/validation/test data partitioning strategies.</li>
+              <li>Diagnose underfitting and overfitting using learning curves.</li>
+              <li>Derive and optimize Gradient Descent parameters.</li>
+              <li>Analyze model metrics using Confusion Matrices, ROC Curves, and Cost Curves.</li>
+            </ul>
+          </div>
+          <div>
+            <h3>📌 Prerequisites</h3>
+            <ul style="padding-left: 1.2rem; color: var(--text-muted); font-size: 0.9rem;">
+              <li>Basic familiarity with Python programming concepts.</li>
+              <li>Fundamental knowledge of Linear Algebra (vectors, matrices).</li>
+              <li>Elementary Calculus concepts (derivatives and rates of change).</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Estimated Time & Progression System</h3>
+        <p style="color: var(--text-muted); font-size: 0.9rem; margin-bottom: 1rem;">Complete interactive modules in order. Score 100% on module quizzes to earn experience points (XP) and unlock advanced analytical labs.</p>
+        <button class="btn" onclick="switchTab('mod1')">Start Module 1: Split Strategy →</button>
+      </div>
+    </div>
+
+    <!-- MODULE 1: DATA SPLITTING & GENERALIZATION -->
+    <div id="mod1" class="tab-content">
+      <div class="card">
+        <span class="badge badge-blue">Module 1</span>
+        <h2>Data Splitting, Validation & Generalization</h2>
+        <p>The foundational principle of statistical machine learning is predicting outcomes on unseen data. Models must learn general underlying relationships rather than memorizing historical training inputs.</p>
+        
+        <div class="callout">
+          <strong>Real-World Analogy:</strong> Training a model on evaluation data is like giving a student the exact exam questions prior to a final test. High scores reflect rote memorization rather than actual subject comprehension.
+        </div>
+
+        <h3>Interactive Lab: Overfitting vs. Underfitting Simulator</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Adjust model complexity (polynomial degree) to observe how capacity impacts training error versus validation error.</p>
+
+        <div class="diagram-container">
+          <svg class="interactive-graph" id="svg-fit-graph" viewBox="0 0 500 200">
+            <!-- Dynamic elements drawn via JS -->
+          </svg>
+          <div class="control-group">
+            <div class="slider-label">
+              <span>Model Complexity (Polynomial Degree): <strong id="poly-val">1</strong></span>
+              <span id="fit-status" class="badge badge-green">Optimal Fit</span>
+            </div>
+            <input type="range" id="poly-slider" min="1" max="12" value="1" oninput="updateFitGraph(this.value)">
+          </div>
+        </div>
+
+        <h3>Key Concepts</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Dataset Split</th>
+              <th>Proportion</th>
+              <th>Primary Function</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Train Set</strong></td>
+              <td>60% - 80%</td>
+              <td>Used directly by the optimization algorithm to update model weights.</td>
+            </tr>
+            <tr>
+              <td><strong>Validation Set</strong></td>
+              <td>10% - 20%</td>
+              <td>Used for hyperparameter tuning and early stopping detection. Prevents data leakage.</td>
+            </tr>
+            <tr>
+              <td><strong>Test Set</strong></td>
+              <td>10% - 20%</td>
+              <td>Held out entirely until final model selection. Evaluates true real-world performance.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>K-Fold Cross-Validation</h3>
+        <p>When working with limited datasets, fixed splits run the risk of sampling bias. <strong>K-Fold Cross-Validation</strong> mitigates this by partitioning data into $K$ equal subsets (folds), iteratively training on $K-1$ folds and evaluating on the remaining fold.</p>
+        
+        <pre><code># Idiomatic K-Fold CV implementation in Python
+from sklearn.model_selection import KFold
+import numpy as np
+
+X = np.array([[1, 2], [3, 4], [1, 2], [3, 4], [5, 6], [7, 8]])
+kf = KFold(n_splits=3, shuffle=True, random_state=42)
+
+for fold, (train_idx, val_idx) in enumerate(kf.split(X)):
+    print(f"Fold {fold}: Train={train_idx}, Val={val_idx}")</code></pre>
+      </div>
+
+      <!-- Quiz Module 1 -->
+      <div class="card">
+        <h3>📝 Module 1 Checkpoint</h3>
+        <div id="quiz-mod1-container"></div>
+      </div>
+    </div>
+
+    <!-- MODULE 2: GRADIENT DESCENT & OPTIMIZATION -->
+    <div id="mod2" class="tab-content">
+      <div class="card">
+        <span class="badge badge-blue">Module 2</span>
+        <h2>Optimization Mechanics: Gradient Descent</h2>
+        <p>Training a machine learning model means minimizing a scalar **Loss Function** $L(\theta)$. Gradient Descent iteratively updates parameter vector $\theta$ in the opposite direction of the gradient vector $\nabla_\theta L(\theta)$.</p>
+
+        <div class="callout">
+          $$\theta_{t+1} = \theta_t - \eta \cdot \nabla_\theta L(\theta_t)$$
+          Where $\eta$ represents the <strong>Learning Rate</strong> (step size parameter).
+        </div>
+
+        <h3>Interactive Lab: Gradient Descent Convergence Simulator</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Adjust learning rate $\eta$ to observe convergence, slow progress, or numerical overshoot divergence.</p>
+
+        <div class="diagram-container">
+          <svg class="interactive-graph" id="svg-gd-graph" viewBox="0 0 500 200">
+            <!-- Dynamic elements drawn via JS -->
+          </svg>
+          <div class="control-group">
+            <div class="slider-label">
+              <span>Learning Rate ($\eta$): <strong id="lr-val">0.10</strong></span>
+              <span id="gd-status" class="badge badge-green">Stable Convergence</span>
+            </div>
+            <input type="range" id="lr-slider" min="0.01" max="1.1" step="0.01" value="0.1" oninput="updateGDGraph(this.value)">
+          </div>
+        </div>
+
+        <h3>Optimization Variants</h3>
+        <div class="grid-2">
+          <div style="background: var(--bg-dark); padding: 1rem; border-radius: 8px;">
+            <h4>Batch Gradient Descent</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Computes exact loss gradients across the entire dataset. Deterministic updates, but computationally prohibitive for large datasets.</p>
+          </div>
+          <div style="background: var(--bg-dark); padding: 1rem; border-radius: 8px;">
+            <h4>Stochastic / Mini-Batch GD</h4>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Computes approximate gradients using small random data subsets (mini-batches). Adds stochastic variance that helps escape local minima.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Module 2 -->
+      <div class="card">
+        <h3>📝 Module 2 Checkpoint</h3>
+        <div id="quiz-mod2-container"></div>
+      </div>
+    </div>
+
+    <!-- MODULE 3: CLASSIFICATION METRICS -->
+    <div id="mod3" class="tab-content">
+      <div class="card">
+        <span class="badge badge-blue">Module 3</span>
+        <h2>Classification Metrics & Confusion Analysis</h2>
+        <p>Simple Accuracy ($\frac{\text{Correct}}{\text{Total}}$) fails on imbalanced datasets. Diagnostic frameworks evaluate true positives, false positives, true negatives, and false negatives independently.</p>
+
+        <h3>Interactive Lab: Confusion Matrix & Metric Calculator</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted);">Modify cell counts in the Confusion Matrix below to instantly calculate downstream evaluation metrics.</p>
+
+        <div class="grid-2" style="align-items: center;">
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; text-align: center;">
+            <div style="background: rgba(52, 211, 153, 0.2); padding: 1rem; border-radius: 8px; border: 1px solid var(--accent-green);">
+              <label>True Positive (TP)</label>
+              <input type="number" id="cm-tp" value="85" style="width: 100%; text-align: center; margin-top: 0.5rem;" onchange="calculateCM()">
+            </div>
+            <div style="background: rgba(248, 113, 113, 0.2); padding: 1rem; border-radius: 8px; border: 1px solid var(--accent-red);">
+              <label>False Positive (FP)</label>
+              <input type="number" id="cm-fp" value="15" style="width: 100%; text-align: center; margin-top: 0.5rem;" onchange="calculateCM()">
+            </div>
+            <div style="background: rgba(248, 113, 113, 0.2); padding: 1rem; border-radius: 8px; border: 1px solid var(--accent-red);">
+              <label>False Negative (FN)</label>
+              <input type="number" id="cm-fn" value="5" style="width: 100%; text-align: center; margin-top: 0.5rem;" onchange="calculateCM()">
+            </div>
+            <div style="background: rgba(52, 211, 153, 0.2); padding: 1rem; border-radius: 8px; border: 1px solid var(--accent-green);">
+              <label>True Negative (TN)</label>
+              <input type="number" id="cm-tn" value="950" style="width: 100%; text-align: center; margin-top: 0.5rem;" onchange="calculateCM()">
+            </div>
+          </div>
+
+          <div style="background: var(--bg-dark); padding: 1rem; border-radius: 8px; font-family: var(--font-mono); font-size: 0.85rem;">
+            <div>Accuracy:  <span id="out-acc" style="color: var(--accent-blue);">0.00</span></div>
+            <div>Precision: <span id="out-prec" style="color: var(--accent-blue);">0.00</span></div>
+            <div>Recall:    <span id="out-rec" style="color: var(--accent-blue);">0.00</span></div>
+            <div>F1-Score:  <span id="out-f1" style="color: var(--accent-green); font-weight: bold;">0.00</span></div>
+          </div>
+        </div>
+
+        <h3>Mathematical Formulations</h3>
+        <div class="grid-2" style="margin-top: 1rem;">
+          <div>
+            $$\text{Precision} = \frac{TP}{TP + FP}$$
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Quantifies prediction reliability. Crucial for spam filtering or fraud prevention where false alarms carry high operational costs.</p>
+          </div>
+          <div>
+            $$\text{Recall (Sensitivity)} = \frac{TP}{TP + FN}$$
+            <p style="font-size: 0.8rem; color: var(--text-muted);">Quantifies detection coverage. Vital for medical diagnostics where missed positive cases carry severe consequences.</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Quiz Module 3 -->
+      <div class="card">
+        <h3>📝 Module 3 Checkpoint</h3>
+        <div id="quiz-mod3-container"></div>
+      </div>
+    </div>
+
+    <!-- MODULE 4: REGRESSION METRICS -->
+    <div id="mod4" class="tab-content">
+      <div class="card">
+        <span class="badge badge-blue">Module 4</span>
+        <h2>Regression Metrics & Error Loss Surfaces</h2>
+        <p>Evaluating continuous variable targets requires measuring absolute, squared, or proportional distances between actual targets ($y_i$) and predictions ($\hat{y}_i$).</p>
+
+        <h3>Core Evaluation Metrics</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th>Equation</th>
+              <th>Key Properties & Behavior</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><strong>Mean Absolute Error (MAE)</strong></td>
+              <td>$$\frac{1}{n} \sum |y_i - \hat{y}_i|$$</td>
+              <td>Linear penalty scale. Robust against extreme outlier anomalies. Same units as original target variable.</td>
+            </tr>
+            <tr>
+              <td><strong>Mean Squared Error (MSE)</strong></td>
+              <td>$$\frac{1}{n} \sum (y_i - \hat{y}_i)^2$$</td>
+              <td>Quadratic penalty scale. Heavily punishes large errors. Differentiable everywhere, making it ideal for direct gradient optimization.</td>
+            </tr>
+            <tr>
+              <td><strong>Root MSE (RMSE)</strong></td>
+              <td>$$\sqrt{\text{MSE}}$$</td>
+              <td>Retains the heavy outlier penalty of MSE while converting loss dimensions back to original target units.</td>
+            </tr>
+            <tr>
+              <td><strong>$R^2$ Coefficient</strong></td>
+              <td>$$1 - \frac{\sum (y_i - \hat{y}_i)^2}{\sum (y_i - \bar{y})^2}$$</td>
+              <td>Normalized scale ($-\infty$ to $1.0$). Measures the fraction of target variance explained by model features.</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Quiz Module 4 -->
+      <div class="card">
+        <h3>📝 Module 4 Checkpoint</h3>
+        <div id="quiz-mod4-container"></div>
+      </div>
+    </div>
+
+    <!-- CAPSTONE PRACTICAL CHALLENGE -->
+    <div id="challenge" class="tab-content">
+      <div class="card">
+        <span class="badge badge-green">Capstone</span>
+        <h2>Practicum: Diagnostic Debugging Challenge</h2>
+        <p>You are deploying a high-throughput medical diagnostic model designed to detect rare anomalies in patient imagery (prevalence rate: 1.2%).</p>
+        
+        <div class="callout">
+          <strong>Problem Statement:</strong> An intern reports a model with <strong>98.8% Test Accuracy</strong>. However, during clinical testing, the system fails to flag a single high-risk patient correctly.
+        </div>
+
+        <h3>Interactive Diagnostic Lab</h3>
+        <p style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 1rem;">Select the appropriate remediation strategy to correct this production failure.</p>
+
+        <div id="challenge-options">
+          <div class="quiz-option" onclick="selectChallenge(0, this)">
+            A. Increase learning rate $\eta$ and train for 50 additional epochs.
+          </div>
+          <div class="quiz-option" onclick="selectChallenge(1, this)">
+            B. Switch primary loss metric from Accuracy to PR-AUC/F-Beta ($\beta=2$), and apply class-weight balancing (SMOTE / Focal Loss).
+          </div>
+          <div class="quiz-option" onclick="selectChallenge(2, this)">
+            C. Remove validation datasets and combine all data into the training set to maximize sample size.
+          </div>
+        </div>
+
+        <button class="btn" style="margin-top: 1rem;" id="btn-submit-challenge" onclick="evalChallenge()">Submit Diagnostic Strategy</button>
+        <div id="challenge-feedback" style="margin-top: 1rem;"></div>
+      </div>
+    </div>
+
+    <!-- CHEATSHEET & SUMMARY -->
+    <div id="cheatsheet" class="tab-content">
+      <div class="card">
+        <h2>ML Evaluation Reference Cheatsheet</h2>
+        
+        <h3>Metric Selection Guide</h3>
+        <table>
+          <thead>
+            <tr>
+              <th>Problem Type</th>
+              <th>Data Characteristics</th>
+              <th>Recommended Metric</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Balanced Classification</td>
+              <td>Uniform class distribution</td>
+              <td>Accuracy, ROC-AUC</td>
+            </tr>
+            <tr>
+              <td>Imbalanced Classification</td>
+              <td>Rare positive classes (e.g. Fraud, Medical)</td>
+              <td>PR-AUC, F1-Score, Balanced Accuracy</td>
+            </tr>
+            <tr>
+              <td>Regression</td>
+              <td>Normal error distribution, no extreme outliers</td>
+              <td>RMSE, $R^2$</td>
+            </tr>
+            <tr>
+              <td>Regression</td>
+              <td>Data contains significant extreme outliers</td>
+              <td>MAE, Huber Loss</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h3>Common Pitfalls to Avoid</h3>
+        <ul style="padding-left: 1.2rem; font-size: 0.9rem; color: var(--text-muted);">
+          <li><strong>Data Leakage:</strong> Performing feature normalization or imputation before splitting train/test datasets.</li>
+          <li><strong>Evaluating on Training Data:</strong> Relying on training loss curves rather than validation loss to evaluate real-world generalization.</li>
+          <li><strong>Ignoring Class Imbalance:</strong> Optimizing accuracy on imbalanced targets, leading to trivial majority-class classifiers.</li>
+        </ul>
+      </div>
+    </div>
+
+    <!-- RESOURCES -->
+    <div id="resources" class="tab-content">
+      <div class="card">
+        <h2>Recommended Learning Resources</h2>
+        <div class="grid-2">
+          <div>
+            <h3>📚 Key Textbooks</h3>
+            <ul style="padding-left: 1.2rem; font-size: 0.9rem; color: var(--text-muted);">
+              <li><em>Pattern Recognition and Machine Learning</em> — Christopher Bishop</li>
+              <li><em>The Elements of Statistical Learning</em> — Hastie, Tibshirani, Friedman</li>
+              <li><em>Hands-On Machine Learning</em> — Aurélien Géron</li>
+            </ul>
+          </div>
+          <div>
+            <h3>🔗 Key Documentation</h3>
+            <ul style="padding-left: 1.2rem; font-size: 0.9rem; color: var(--text-muted);">
+              <li><a href="#" style="color: var(--accent-blue);">Scikit-Learn Model Evaluation Guides</a></li>
+              <li><a href="#" style="color: var(--accent-blue);">PyTorch Optimization Documentation</a></li>
+              <li><a href="#" style="color: var(--accent-blue);">TensorFlow Validation Best Practices</a></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script>
+    /* Global Application State */
+    const state = {
+      xp: 0,
+      unlockedModules: [true, false, false, false, false],
+      challengeSelected: null
+    };
+
+    const quizzes = {
+      mod1: {
+        question: "Why should normalization transformations (e.g., StandardScaler) be fitted exclusively on the training split?",
+        options: [
+          "To reduce training computation time.",
+          "To prevent validation data information from leaking into model parameter prep.",
+          "Because validation data contains no statistical variance.",
+          "It doesn't matter; parameters can be fit on the entire dataset simultaneously."
+        ],
+        answer: 1,
+        explanation: "Fitting transformations on the full dataset introduces Data Leakage. The training pipeline gains implicit information about the mean and variance of unseen evaluation data."
+      },
+      mod2: {
+        question: "What occurs when the Learning Rate (η) in Gradient Descent is set excessively high?",
+        options: [
+          "The model converges to global minimum exponentially faster.",
+          "The algorithm gets trapped in local minima indefinitely.",
+          "Updates overshoot loss valleys, causing optimization divergence.",
+          "The parameter gradients decay to zero immediately."
+        ],
+        answer: 2,
+        explanation: "An overly large step size causes updates to overshoot the minimum, bouncing back and forth across the loss surface with increasing amplitude."
+      },
+      mod3: {
+        question: "In a medical screening model where missed diagnoses carry severe risks, which metric should be prioritized?",
+        options: [
+          "Precision",
+          "Recall (Sensitivity)",
+          "Specificity",
+          "Overall Accuracy"
+        ],
+        answer: 1,
+        explanation: "Recall measures the proportion of actual positive cases successfully identified. Maximizing Recall minimizes False Negatives."
+      },
+      mod4: {
+        question: "How does Mean Squared Error (MSE) handle prediction errors compared to Mean Absolute Error (MAE)?",
+        options: [
+          "MSE treats small and large errors linearly.",
+          "MSE scales quadratically, penalizing larger outliers more severely than MAE.",
+          "MSE is less sensitive to extreme anomaly outliers than MAE.",
+          "MSE scales logarithmically relative to absolute deviations."
+        ],
+        answer: 1,
+        explanation: "Because errors are squared, MSE penalizes large deviations proportionally more than small deviations."
+      }
+    };
+
+    /* TAB NAVIGATION */
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      
+      const targetTab = document.getElementById(tabId);
+      if(targetTab) targetTab.classList.add('active');
+
+      const navEl = document.getElementById(`nav-${tabId}`);
+      if(navEl) navEl.classList.add('active');
+
+      // Refresh diagrams on tab view
+      if(tabId === 'mod1') updateFitGraph(document.getElementById('poly-slider').value);
+      if(tabId === 'mod2') updateGDGraph(document.getElementById('lr-slider').value);
+      if(tabId === 'mod3') calculateCM();
+    }
+
+    /* RENDER QUIZZES */
+    function renderQuiz(modKey, containerId) {
+      const q = quizzes[modKey];
+      const container = document.getElementById(containerId);
+      if(!container) return;
+
+      let html = `<p style="font-weight:600; margin-bottom: 1rem;">${q.question}</p>`;
+      q.options.forEach((opt, idx) => {
+        html += `<div class="quiz-option" onclick="selectQuizOption('${modKey}', ${idx}, this)">${opt}</div>`;
+      });
+      html += `<button class="btn" style="margin-top:0.8rem" id="btn-quiz-${modKey}" onclick="submitQuiz('${modKey}')" disabled>Submit Answer</button>`;
+      html += `<div id="feedback-${modKey}" style="margin-top: 0.8rem; font-size: 0.9rem;"></div>`;
+
+      container.innerHTML = html;
+    }
+
+    let selectedAnswers = {};
+
+    function selectQuizOption(modKey, optionIdx, el) {
+      const parent = el.parentElement;
+      parent.querySelectorAll('.quiz-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      selectedAnswers[modKey] = optionIdx;
+      document.getElementById(`btn-quiz-${modKey}`).disabled = false;
+    }
+
+    function submitQuiz(modKey) {
+      const selected = selectedAnswers[modKey];
+      const q = quizzes[modKey];
+      const feedback = document.getElementById(`feedback-${modKey}`);
+      
+      const options = document.getElementById(`quiz-${modKey}-container`).querySelectorAll('.quiz-option');
+
+      if(selected === q.answer) {
+        options[selected].classList.add('correct');
+        feedback.innerHTML = `<span style="color:var(--accent-green)">✔ Correct! ${q.explanation}</span>`;
+        addXP(25);
+        unlockNextModule(modKey);
+      } else {
+        options[selected].classList.add('incorrect');
+        options[q.answer].classList.add('correct');
+        feedback.innerHTML = `<span style="color:var(--accent-red)">✘ Incorrect. ${q.explanation}</span>`;
+      }
+
+      document.getElementById(`btn-quiz-${modKey}`).disabled = true;
+    }
+
+    function addXP(amount) {
+      state.xp = Math.min(100, state.xp + amount);
+      document.getElementById('xp-text').innerText = `${state.xp} XP`;
+      document.getElementById('xp-fill').style.width = `${state.xp}%`;
+    }
+
+    function unlockNextModule(currentMod) {
+      const sequence = ['mod1', 'mod2', 'mod3', 'mod4', 'challenge'];
+      const currentIdx = sequence.indexOf(currentMod);
+      if(currentIdx !== -1 && currentIdx + 1 < sequence.length) {
+        const nextMod = sequence[currentIdx + 1];
+        const badge = document.getElementById(`badge-${nextMod}`);
+        if(badge) badge.innerText = '🔓';
+        const nav = document.getElementById(`nav-${nextMod}`);
+        if(nav) nav.classList.remove('locked');
+      }
+    }
+
+    /* INTERACTIVE DIAGRAM 1: OVERFITTING GRAPH */
+    function updateFitGraph(val) {
+      document.getElementById('poly-val').innerText = val;
+      const status = document.getElementById('fit-status');
+      const svg = document.getElementById('svg-fit-graph');
+      
+      let badgeClass = "badge-green";
+      let statusText = "Optimal Generalization";
+
+      if(val == 1) {
+        badgeClass = "badge-blue";
+        statusText = "Underfitting (High Bias)";
+      } else if(val > 6) {
+        badgeClass = "badge-green"; 
+        statusText = "Overfitting (High Variance)";
+      }
+
+      status.className = `badge ${badgeClass}`;
+      status.innerText = statusText;
+
+      // Draw SVG visualization
+      let points = "";
+      const poly = parseInt(val);
+      for(let x = 20; x <= 480; x += 10) {
+        let normX = (x - 250) / 100;
+        let y = 100 - (normX * 30);
+        
+        if(poly > 1) {
+          y += Math.sin(normX * poly) * (poly * 4);
+        }
+        
+        // Clamp SVG boundary bounds
+        y = Math.max(20, Math.min(180, y));
+        points += `${x},${y} `;
+      }
+
+      svg.innerHTML = `
+        <line x1="20" y1="180" x2="480" y2="180" stroke="#233148" stroke-width="2"/>
+        <line x1="20" y1="20" x2="20" y2="180" stroke="#233148" stroke-width="2"/>
+        <!-- Sample Training Data Points -->
+        <circle cx="80" cy="140" r="4" fill="#fbbf24"/>
+        <circle cx="150" cy="110" r="4" fill="#fbbf24"/>
+        <circle cx="240" cy="105" r="4" fill="#fbbf24"/>
+        <circle cx="320" cy="60" r="4" fill="#fbbf24"/>
+        <circle cx="420" cy="40" r="4" fill="#fbbf24"/>
+        <!-- Model Prediction Curve -->
+        <polyline fill="none" stroke="#38bdf8" stroke-width="3" points="${points}"/>
+      `;
+    }
+
+    /* INTERACTIVE DIAGRAM 2: GRADIENT DESCENT */
+    function updateGDGraph(lr) {
+      document.getElementById('lr-val').innerText = parseFloat(lr).toFixed(2);
+      const svg = document.getElementById('svg-gd-graph');
+      const status = document.getElementById('gd-status');
+
+      let statusText = "Stable Convergence";
+      let badgeClass = "badge-green";
+
+      if(lr > 0.8) {
+        statusText = "Divergent (Overshooting)";
+        badgeClass = "badge-green";
+      } else if(lr < 0.05) {
+        statusText = "Underpowered Steps";
+        badgeClass = "badge-blue";
+      }
+
+      status.className = `badge ${badgeClass}`;
+      status.innerText = statusText;
+
+      // Parabola baseline: y = 0.003 * (x - 250)^2 + 30
+      let points = "";
+      for(let x = 50; x <= 450; x += 10) {
+        let y = 0.002 * Math.pow(x - 250, 2) + 30;
+        points += `${x},${y} `;
+      }
+
+      // Compute descent path
+      let pathPoints = "";
+      let currX = 80;
+      const eta = parseFloat(lr);
+
+      for(let step = 0; step < 8; step++) {
+        let currY = 0.002 * Math.pow(currX - 250, 2) + 30;
+        pathPoints += `${currX},${currY} `;
+        let grad = 0.004 * (currX - 250);
+        currX = currX - eta * grad * 800; // Scaled for visualization
+      }
+
+      svg.innerHTML = `
+        <polyline fill="none" stroke="#233148" stroke-width="2" points="${points}"/>
+        <polyline fill="none" stroke="#f87171" stroke-width="2" stroke-dasharray="4" points="${pathPoints}"/>
+      `;
+    }
+
+    /* MODULE 3 LOGIC: CONFUSION MATRIX CALCULATOR */
+    function calculateCM() {
+      const tp = parseFloat(document.getElementById('cm-tp').value) || 0;
+      const fp = parseFloat(document.getElementById('cm-fp').value) || 0;
+      const fn = parseFloat(document.getElementById('cm-fn').value) || 0;
+      const tn = parseFloat(document.getElementById('cm-tn').value) || 0;
+
+      const total = tp + fp + fn + tn;
+      const acc = total > 0 ? (tp + tn) / total : 0;
+      const prec = (tp + fp) > 0 ? tp / (tp + fp) : 0;
+      const rec = (tp + fn) > 0 ? tp / (tp + fn) : 0;
+      const f1 = (prec + rec) > 0 ? 2 * (prec * rec) / (prec + rec) : 0;
+
+      document.getElementById('out-acc').innerText = acc.toFixed(3);
+      document.getElementById('out-prec').innerText = prec.toFixed(3);
+      document.getElementById('out-rec').innerText = rec.toFixed(3);
+      document.getElementById('out-f1').innerText = f1.toFixed(3);
+    }
+
+    /* CAPSTONE CHALLENGE LOGIC */
+    function selectChallenge(idx, el) {
+      document.querySelectorAll('#challenge-options .quiz-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      state.challengeSelected = idx;
+    }
+
+    function evalChallenge() {
+      const feedback = document.getElementById('challenge-feedback');
+      if(state.challengeSelected === 1) {
+        feedback.innerHTML = `<div class="callout" style="border-color:var(--accent-green); background:rgba(52,211,153,0.1)">
+          <strong>🏆 Outstanding Strategy!</strong><br>
+          Accuracy was misleading due to severe class imbalance (98.8% of cases were negative). By targeting PR-AUC/F-Beta metrics and applying class-rebalancing, the model successfully detects rare clinical anomalies.
+        </div>`;
+        addXP(25);
+      } else {
+        feedback.innerHTML = `<div class="callout" style="border-color:var(--accent-red); background:rgba(248,113,113,0.1)">
+          <strong>✘ Strategy Ineffective.</strong><br>
+          High accuracy on imbalanced data simply indicates the model is predicting the majority negative class 100% of the time. You must adjust evaluation metrics and rebalance training distributions.
+        </div>`;
+      }
+    }
+
+    /* Initialization */
+    window.addEventListener('DOMContentLoaded', () => {
+      renderQuiz('mod1', 'quiz-mod1-container');
+      renderQuiz('mod2', 'quiz-mod2-container');
+      renderQuiz('mod3', 'quiz-mod3-container');
+      renderQuiz('mod4', 'quiz-mod4-container');
+      
+      updateFitGraph(1);
+      updateGDGraph(0.1);
+      calculateCM();
+    });
+  </script>
+</body>
+</html>
