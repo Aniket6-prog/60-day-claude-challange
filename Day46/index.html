@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Autonomous Agent Studio</title>
+<style>
+:root{--bg:#080b12;--panel:#0f1420;--panel2:#131a28;--line:#273044;--text:#edf2ff;--muted:#8e9ab0;--accent:#7c5cff;--good:#38d39f;--warn:#f5b84b;--bad:#ff6b7a;--cyan:#47c7ff;--shadow:0 18px 60px rgba(0,0,0,.35)}
+*{box-sizing:border-box}html,body{margin:0;background:radial-gradient(circle at 15% -10%,#1b1740 0,#080b12 35%),var(--bg);color:var(--text);font:14px/1.5 Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,sans-serif}
+button,input,textarea{font:inherit}button{cursor:pointer}.app{min-height:100vh}.top{position:sticky;top:0;z-index:10;background:rgba(8,11,18,.88);backdrop-filter:blur(18px);border-bottom:1px solid var(--line);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}.brand{display:flex;gap:12px;align-items:center}.logo{width:38px;height:38px;border-radius:12px;background:linear-gradient(135deg,#8b72ff,#47c7ff);box-shadow:0 0 30px rgba(124,92,255,.35);display:grid;place-items:center;font-weight:900}.brand h1{font-size:16px;margin:0}.brand small{color:var(--muted)}.top-actions{display:flex;gap:8px}.btn{border:1px solid var(--line);background:#151c2a;color:var(--text);padding:9px 13px;border-radius:9px}.btn.primary{background:linear-gradient(135deg,#7c5cff,#5c7cff);border:0}.btn.danger{border-color:#5a2630;color:#ffb3bc}.btn:disabled{opacity:.45;cursor:not-allowed}
+.wrap{max-width:1500px;margin:auto;padding:24px}.hero{display:grid;grid-template-columns:1.5fr 1fr;gap:18px;margin-bottom:18px}.card{background:linear-gradient(180deg,rgba(19,26,40,.96),rgba(12,17,27,.96));border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}.hero .card{padding:22px}.eyebrow{color:var(--cyan);text-transform:uppercase;letter-spacing:.14em;font-size:11px;font-weight:800}.hero h2{font-size:30px;line-height:1.1;margin:8px 0}.hero p{color:var(--muted);max-width:780px}.pill{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);border-radius:99px;padding:5px 9px;color:#b9c3d7;background:#111827}.dot{width:7px;height:7px;border-radius:50%;background:var(--good);box-shadow:0 0 10px currentColor}.config{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field{display:flex;flex-direction:column;gap:6px}.field.full{grid-column:1/-1}.field label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.08em}.field input,.field textarea{width:100%;background:#0b1019;border:1px solid var(--line);border-radius:9px;color:var(--text);padding:10px 11px;outline:none}.field textarea{min-height:95px;resize:vertical}.field input:focus,.field textarea:focus{border-color:#6755db}.note{font-size:11px;color:var(--muted)}
+.layout{display:grid;grid-template-columns:1.4fr .6fr;gap:18px}.main,.side{display:flex;flex-direction:column;gap:18px}.section{padding:18px}.section-title{display:flex;align-items:center;justify-content:space-between;margin-bottom:14px}.section-title h3{margin:0;font-size:14px}.status{color:var(--muted);font-size:12px}
+.workflow{overflow:auto;padding:18px}.flow{min-width:900px;display:grid;grid-template-columns:repeat(8,1fr);gap:8px;position:relative}.agent{position:relative;border:1px solid var(--line);background:#101725;border-radius:12px;padding:11px;min-height:88px;transition:.25s}.agent.active{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(71,199,255,.18),0 0 28px rgba(71,199,255,.12);transform:translateY(-2px)}.agent.stop{border-color:#a879ff}.agent .n{font-size:10px;color:var(--muted)}.agent b{display:block;margin-top:4px}.agent small{color:var(--muted);display:block;margin-top:4px}.arrow{position:absolute;top:45px;left:4%;right:4%;height:110px;pointer-events:none}.arrow:after{content:"";position:absolute;left:16%;right:16%;bottom:2px;height:70px;border:2px solid #5a4aa8;border-top:0;border-radius:0 0 60px 60px}.arrow i{position:absolute;left:15.7%;bottom:-4px;border:6px solid transparent;border-right-color:#5a4aa8;transform:rotate(45deg)}.branch{margin:12px auto 0;max-width:260px;text-align:center;border:1px dashed #7359c7;border-radius:10px;padding:8px;color:#cdbfff}.flow-caption{margin-top:16px;color:var(--muted);font-size:12px;text-align:center}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.metric{padding:13px;background:#0b111b;border:1px solid var(--line);border-radius:11px}.metric span{color:var(--muted);font-size:11px}.metric strong{display:block;font-size:20px;margin-top:3px}.metric.good strong{color:var(--good)}
+.history{overflow:auto}.history table{width:100%;border-collapse:collapse;font-size:12px}.history th,.history td{padding:9px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}.history th{color:var(--muted);font-weight:600}.delta.up{color:var(--good)}.delta.down{color:var(--bad)}.delta.flat{color:var(--warn)}
+.tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:10px}.tab{padding:7px 10px;border:1px solid var(--line);background:#0d131e;border-radius:8px;color:var(--muted)}.tab.on{color:var(--text);border-color:#6253bd;background:#17142d}.output{background:#090e17;border:1px solid var(--line);border-radius:10px;padding:12px;white-space:pre-wrap;overflow:auto;max-height:300px;font:12px/1.6 ui-monospace,SFMono-Regular,Menlo,monospace;color:#cbd5e1}.log{max-height:310px;overflow:auto;display:flex;flex-direction:column;gap:7px}.logrow{padding:8px 10px;border-left:2px solid #35425c;background:#0b111b;border-radius:0 8px 8px 0}.logrow .time{color:#66738a;font-size:10px;margin-right:7px}.logrow.info{border-color:var(--cyan)}.logrow.good{border-color:var(--good)}.logrow.warn{border-color:var(--warn)}.logrow.bad{border-color:var(--bad)}
+.agent-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.agent-info{padding:10px;background:#0b111b;border:1px solid var(--line);border-radius:10px}.agent-info b{font-size:12px}.agent-info p{margin:4px 0 0;color:var(--muted);font-size:11px}.memory{display:flex;flex-direction:column;gap:7px}.memory-item{padding:8px 10px;border:1px solid var(--line);border-radius:8px;color:#b9c3d7;background:#0b111b;font-size:11px}
+.final{border-color:#4a3b80}.stopbadge{display:inline-block;padding:5px 9px;border-radius:7px;background:#19142d;color:#d1c4ff;border:1px solid #5944a2;font-size:11px}
+.progress{height:5px;background:#20283a;border-radius:99px;overflow:hidden}.progress>i{display:block;height:100%;width:0;background:linear-gradient(90deg,#7c5cff,#47c7ff);transition:width .4s}
+@media(max-width:1100px){.hero,.layout{grid-template-columns:1fr}.metrics{grid-template-columns:repeat(2,1fr)}}@media(max-width:650px){.wrap{padding:12px}.top{padding:12px}.config{grid-template-columns:1fr}.field.full{grid-column:auto}.agent-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="top"><div class="brand"><div class="logo">A</div><div><h1>Autonomous Agent Studio</h1><small>AI News → factual blog → autonomous verification loop</small></div></div><div class="top-actions"><span id="livePill" class="pill"><i class="dot"></i> Ready</span><button id="stopBtn" class="btn danger" disabled>Stop run</button></div></header>
+<main class="wrap">
+<section class="hero">
+<div class="card"><span class="eyebrow">Autonomous workflow</span><h2>AI Content Creator & Publisher</h2><p>Designed for AI professionals. It turns an emerging AI development into a fact-first blog, repeatedly evaluating, critiquing and improving the draft until the 100% target is reached—or a safety stop sends it to human review.</p><div style="display:flex;gap:7px;flex-wrap:wrap"><span class="pill">AI & emerging technology</span><span class="pill">Multiple independent sources</span><span class="pill">100% target</span><span class="pill">&lt;2% × 2 plateau</span></div></div>
+<div class="card"><div class="section-title"><h3>Run configuration</h3><span class="status">Auto-designed team</span></div><div class="config">
+<div class="field"><label>Anthropic API key</label><input id="apiKey" type="password" placeholder="sk-ant-…"></div>
+<div class="field"><label>Model</label><input id="model" value="claude-sonnet-4-20250514"></div>
+<div class="field full"><label>Emerging AI news event</label><textarea id="news" placeholder="Example: A new frontier AI model was announced… Include known facts, dates and source URLs/excerpts if available."></textarea></div>
+<div class="field full"><label>Independent evidence</label><textarea id="sources" placeholder="Paste multiple source excerpts/URLs. The model must distinguish verified evidence from claims."></textarea></div>
+</div><div style="margin-top:12px;display:flex;gap:8px"><button id="runBtn" class="btn primary">▶ Start autonomous run</button><button id="demoBtn" class="btn">Load example</button></div><div class="note" style="margin-top:9px">Browser-side API calls require a valid Anthropic API key and an environment that permits cross-origin requests. Never expose a production key in a public deployment.</div></div>
+</section>
+
+<section class="card workflow section"><div class="section-title"><h3>Orchestration graph</h3><span id="roundLabel" class="status">Waiting for a run</span></div>
+<div class="flow" id="flow">
+<div class="agent" data-agent="Planner"><span class="n">01</span><b>Planner</b><small>Scope + claims plan</small></div>
+<div class="agent" data-agent="Executor"><span class="n">02</span><b>Executor</b><small>Research + draft</small></div>
+<div class="agent" data-agent="Evaluator"><span class="n">03</span><b>Evaluator</b><small>Accuracy scoring</small></div>
+<div class="agent" data-agent="Critic"><span class="n">04</span><b>Critic</b><small>Find weak claims</small></div>
+<div class="agent" data-agent="Improver"><span class="n">05</span><b>Improver</b><small>Repair draft</small></div>
+<div class="agent" data-agent="Memory Manager"><span class="n">06</span><b>Memory</b><small>Persist learnings</small></div>
+<div class="agent" data-agent="Safety Monitor"><span class="n">07</span><b>Safety</b><small>Guard publishing</small></div>
+<div class="agent stop" data-agent="Final Reviewer"><span class="n">08</span><b>Final Reviewer</b><small>Release gate</small></div>
+<div class="arrow"><i></i></div></div>
+<div class="branch">Stop condition fires → Final Reviewer → automatic publish if threshold is satisfied</div>
+<div class="flow-caption">The return path is intentional: <b>Improver → Evaluator</b>. There is no predetermined successful round count.</div>
+</section>
+
+<div class="layout">
+<div class="main">
+<section class="card section"><div class="section-title"><h3>Execution telemetry</h3><span id="statusText" class="status">Idle</span></div><div class="metrics">
+<div class="metric"><span>Current round</span><strong id="mRound">—</strong></div><div class="metric"><span>Latest accuracy response</span><strong id="mScore">—</strong></div><div class="metric"><span>API calls</span><strong id="mCalls">0</strong></div><div class="metric"><span>Retries</span><strong id="mRetries">0</strong></div></div><div style="margin-top:12px" class="progress"><i id="progress"></i></div></section>
+
+<section class="card section"><div class="section-title"><h3>Round-over-round history</h3><span class="status">Runtime history</span></div><div class="history"><table><thead><tr><th>Round</th><th>Evaluator response</th><th>Delta</th><th>Stop check</th></tr></thead><tbody id="historyBody"><tr><td colspan="4" class="status">No rounds yet.</td></tr></tbody></table></div></section>
+
+<section class="card section"><div class="section-title"><h3>Intermediate outputs</h3><span class="status">Literal API responses</span></div><div class="tabs" id="tabs"></div><div id="output" class="output">Outputs will appear here.</div></section>
+
+<section class="card section final"><div class="section-title"><h3>Final summary</h3><span id="stopBadge" class="stopbadge">Not completed</span></div><div id="finalSummary" class="output">The final release decision will appear after the stop condition and Final Reviewer.</div></section>
+</div>
+<div class="side">
+<section class="card section"><div class="section-title"><h3>Activity log</h3><span class="status">Live</span></div><div id="log" class="log"></div></section>
+<section class="card section"><div class="section-title"><h3>Agent responsibilities</h3></div><div class="agent-grid">
+<div class="agent-info"><b>Planner</b><p>Turns the news event into claims, evidence requirements and a factuality rubric.</p></div>
+<div class="agent-info"><b>Executor</b><p>Uses supplied evidence to construct a professional blog draft without inventing facts.</p></div>
+<div class="agent-info"><b>Evaluator</b><p>Audits the current draft against every claim and returns a literal accuracy assessment.</p></div>
+<div class="agent-info"><b>Critic</b><p>Adversarially searches for unsupported, ambiguous, outdated or conflicting statements.</p></div>
+<div class="agent-info"><b>Improver</b><p>Receives the prior evaluation + critique and repairs the draft.</p></div>
+<div class="agent-info"><b>Memory Manager</b><p>Stores verified facts, unresolved claims and lessons for later rounds.</p></div>
+<div class="agent-info"><b>Safety Monitor</b><p>Prevents unsupported certainty and blocks automatic release when the evidence state is unsafe.</p></div>
+<div class="agent-info"><b>Final Reviewer</b><p>Performs the final release gate after a stop condition fires.</p></div>
+</div></section>
+<section class="card section"><div class="section-title"><h3>Memory updates</h3><span class="status">Threaded state</span></div><div id="memory" class="memory"><div class="status">No memory updates yet.</div></div></section>
+<section class="card section"><div class="section-title"><h3>Stop-check logic</h3></div><div class="note">After every Evaluator call, checks happen in this exact order: <b>1) plateau</b> — less than 2 percentage points of improvement for 2 straight rounds; <b>2) threshold</b> — 100%; <b>3) hard iteration cap</b> — safety fallback only. If no stop fires, Critic → Improver → Memory Manager runs and the improved draft returns to Evaluator.</div></section>
+</div></div>
+</main></div>
+<script>
+"use strict";
+const $=id=>document.getElementById(id);
+const state={running:false,stopRequested:false,calls:0,retries:0,round:0,history:[],outputs:[],memory:[],active:"",stopReason:"",draft:"",rubric:"",plan:"",critique:"",evaluation:"",safety:""};
+const MAX_SAFE_ITERATIONS=20;
+const agents=["Planner","Executor","Evaluator","Critic","Improver","Memory Manager","Safety Monitor","Final Reviewer"];
+function log(msg,type="info"){const d=document.createElement("div");d.className="logrow "+type;const t=document.createElement("span");t.className="time";t.textContent=new Date().toLocaleTimeString();d.append(t,document.createTextNode(msg));$("log").prepend(d)}
+function active(name){state.active=name;document.querySelectorAll(".agent").forEach(x=>x.classList.toggle("active",x.dataset.agent===name))}
+function renderMetrics(){ $("mRound").textContent=state.round||"—"; $("mCalls").textContent=state.calls; $("mRetries").textContent=state.retries; $("statusText").textContent=state.running?`Active: ${state.active}`:(state.stopReason||"Idle"); $("livePill").lastChild.textContent=state.running?" Running":" Ready"; }
+function showOutput(label,text){state.outputs.push({label,text});const tabs=$("tabs");tabs.replaceChildren();state.outputs.forEach((o,i)=>{const b=document.createElement("button");b.className="tab "+(i===state.outputs.length-1?"on":"");b.textContent=o.label;b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("on"));b.classList.add("on");$("output").textContent=o.text};tabs.appendChild(b)});$("output").textContent=text}
+function addMemory(text){state.memory.push(text);const box=$("memory");box.replaceChildren();state.memory.slice(-12).forEach(x=>{const d=document.createElement("div");d.className="memory-item";d.textContent=x;box.appendChild(d)})}
+function parseScore(raw){const m=raw.match(/(?:accuracy|score|factual(?:ity)?)[^0-9]{0,30}(100(?:\\.0+)?|\\d{1,2}(?:\\.\\d+)?)/i);return m?Number(m[1]):null}
+function renderHistory(){const body=$("historyBody");body.replaceChildren();state.history.forEach(h=>{const tr=document.createElement("tr");[h.round,h.evaluation,h.delta===null?"—":`${h.delta>=0?"+":""}${h.delta.toFixed(2)}%`,h.stop||"Continue"].forEach((v,i)=>{const td=document.createElement("td");td.textContent=String(v);if(i===2)td.className=h.delta>0?"delta up":h.delta<0?"delta down":"delta flat";tr.appendChild(td)});body.appendChild(tr)})}
+function sleep(ms){return new Promise(r=>setTimeout(r,ms))}
+async function callClaude(agent,system,user){
+ active(agent);renderMetrics();
+ const key=$("apiKey").value.trim(),model=$("model").value.trim();
+ if(!key)throw new Error("Anthropic API key is required for a live Claude API call.");
+ const body={model,max_tokens:5000,temperature:0.2,system,messages:[{role:"user",content:user}]};
+ let last;
+ for(let attempt=0;attempt<3;attempt++){
+   if(state.stopRequested)throw new Error("Run stopped by user.");
+   try{
+     state.calls++;renderMetrics();
+     const res=await fetch("https://api.anthropic.com/v1/messages",{method:"POST",headers:{"content-type":"application/json","x-api-key":key,"anthropic-version":"2023-06-01","anthropic-dangerous-direct-browser-access":"true"},body:JSON.stringify(body)});
+     if(!res.ok){const tx=await res.text();throw new Error(`Claude API ${res.status}: ${tx.slice(0,500)}`)}
+     const data=await res.json();return (data.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("\\n").trim();
+   }catch(e){last=e;if(attempt<2){state.retries++;log(`${agent}: retry ${attempt+1}/2 — ${e.message}`,"warn");await sleep(800*Math.pow(2,attempt))}}
+ }
+ throw last;
+}
+const SYSTEMS={
+Planner:`You are the Planner in a production autonomous AI-content system. The topic is emerging AI news for AI professionals. Convert the event into a precise research plan. Identify atomic factual claims, dates, entities, quantities, causal claims, and claims requiring independent corroboration. Define a factual-accuracy rubric. Never invent evidence. Return a concise plan that another agent can execute.`,
+Executor:`You are the Executor in a production autonomous AI-content system. Create or revise a professional blog article for AI professionals using ONLY the supplied event and evidence. Distinguish facts from uncertainty. Do not fabricate sources, quotes, metrics, dates, product capabilities, benchmarks, or causal explanations. Preserve citations/evidence references in plain text. Write useful, technically precise prose.`,
+Evaluator:`You are the Evaluator and the factual accuracy gate. Audit the CURRENT DRAFT against the RUBRIC and EVIDENCE. Every score, reasoning statement and finding in your response must be your direct assessment. Do not use external rule-based scoring. Assess each material claim, source independence, conflicts, unsupported certainty, dates and technical precision. Explicitly state an accuracy score from 0 to 100 and why 100 is or is not justified. A claim without adequate evidence prevents a 100% factual-accuracy determination.`,
+Critic:`You are an adversarial factuality Critic. Given the current draft, evaluator response, evidence and memory, find anything that could make the article factually wrong or misleading. Focus on unsupported claims, source dependence, ambiguous wording, stale facts, conflation, hallucinated details and unjustified certainty. Return concrete repairs. Do not praise; attack the draft constructively.`,
+Improver:`You are the Improver. Rewrite the CURRENT DRAFT using the PRIOR EVALUATION and CRITIQUE. Improve factual accuracy above all else. Remove claims that cannot be supported rather than inventing support. Keep the article valuable for AI professionals. Do not claim 100% accuracy unless the evidence genuinely supports it. Return the complete revised draft.`,
+Memory:`You are the Memory Manager. Summarize durable, round-to-round factual state: verified facts, disputed facts, rejected claims, evidence gaps, source-independence observations and lessons for the next evaluation. Never add facts not present in the supplied material.`,
+Safety:`You are the Safety Monitor for publication. Inspect the latest evaluation, draft and memory. Determine whether automatic publication is safe under the explicit policy: only a 100% evaluator accuracy result may publish automatically; otherwise unresolved factual risk goes to human review. Identify any safety concern. Do not silently override the policy.`,
+FinalReviewer:`You are the Final Reviewer and release gate. Review the final draft, latest evaluator result, safety report, evidence and stop reason. Return a final release decision. Automatic publication is permitted ONLY when the latest evaluator explicitly establishes 100% factual accuracy and safety has no blocking concern. Otherwise mark HUMAN REVIEW REQUIRED. Include the exact stop reason in your decision.`
+};
+function context(extra){return `NEWS EVENT:\\n${$("news").value}\\n\\nINDEPENDENT EVIDENCE:\\n${$("sources").value}\\n\\nRUBRIC:\\n${state.rubric}\\n\\nMEMORY:\\n${state.memory.join("\\n---\\n")}\\n\\n${extra}`}
+async function run(){
+ if(state.running)return; state.running=true;state.stopRequested=false;state.calls=0;state.retries=0;state.round=0;state.history=[];state.outputs=[];state.memory=[];state.stopReason="";state.draft="";$("historyBody").replaceChildren();$("tabs").replaceChildren();$("memory").innerHTML='<div class="status">Memory initializing…</div>';$("finalSummary").textContent="Running…";$("runBtn").disabled=true;$("stopBtn").disabled=false;log("Autonomous run started.","good");renderMetrics();
+ try{
+   state.plan=await callClaude("Planner",SYSTEMS.Planner,`Build the research plan for this emerging AI development. ${context("Produce atomic claims and a factuality rubric.")}`);
+   state.rubric=state.plan;showOutput("Planner",state.plan);log("Planner completed: claim/evidence plan created.");
+   state.draft=await callClaude("Executor",SYSTEMS.Executor,context(`PLANNER OUTPUT:\\n${state.plan}\\n\\nCreate the first complete blog article. Include a Sources/Evidence section based only on supplied evidence.`));
+   showOutput("Executor",state.draft);log("Executor completed: initial draft created.");
+   let stop=false;
+   while(!stop && state.round<MAX_SAFE_ITERATIONS){
+     state.round++;$("roundLabel").textContent=`Round ${state.round} — checking stop condition…`;renderMetrics();
+     state.evaluation=await callClaude("Evaluator",SYSTEMS.Evaluator,context(`CURRENT DRAFT:\\n${state.draft}\\n\\nEvaluate this exact draft against the rubric. Return a direct accuracy score and claim-level reasoning.`));
+     const score=parseScore(state.evaluation);const prev=state.history.length?parseScore(state.history[state.history.length-1].evaluation):null;
+     const delta=(score!==null&&prev!==null)?score-prev:null;
+     showOutput(`R${state.round} Evaluator`,state.evaluation);log(`Evaluator returned: ${score===null?"score not machine-detected":score+"%"} (raw response retained).`);
+     const last=state.history[state.history.length-1], plateau=state.history.length>=1 && delta!==null && delta<2 && last.delta!==null && last.delta<2;
+     const threshold=score===100;
+     let reason="";
+     if(plateau)reason="Plateau stop: improvement was less than 2 percentage points for 2 straight rounds.";
+     else if(threshold)reason="Threshold stop: Evaluator reached 100% factual accuracy.";
+     else if(state.round>=MAX_SAFE_ITERATIONS)reason="Hard iteration cap stop: safety fallback.";
+     state.history.push({round:state.round,evaluation:state.evaluation,delta,stop:reason});renderHistory();$("mScore").textContent=score===null?"See response":score+"%";$("progress").style.width=(score===null?0:Math.min(100,score))+"%";
+     if(reason){state.stopReason=reason;log(reason,threshold?"good":"warn");stop=true;break}
+     state.critique=await callClaude("Critic",SYSTEMS.Critic,context(`CURRENT DRAFT:\\n${state.draft}\\n\\nEVALUATOR RESPONSE:\\n${state.evaluation}\\n\\nFind concrete factual repairs.`));
+     showOutput(`R${state.round} Critic`,state.critique);log("Critic completed: adversarial factuality review.");
+     state.draft=await callClaude("Improver",SYSTEMS.Improver,context(`CURRENT DRAFT:\\n${state.draft}\\n\\nPRIOR EVALUATION:\\n${state.evaluation}\\n\\nCRITIQUE:\\n${state.critique}\\n\\nRewrite the complete draft.`));
+     showOutput(`R${state.round} Improver`,state.draft);log("Improver completed: revised draft threaded into next round.","good");
+     const mem=await callClaude("Memory Manager",SYSTEMS.Memory,context(`CURRENT DRAFT:\\n${state.draft}\\n\\nEVALUATION:\\n${state.evaluation}\\n\\nCRITIQUE:\\n${state.critique}\\n\\nCreate round memory.`));
+     addMemory(`Round ${state.round}: ${mem}`);showOutput(`R${state.round} Memory`,mem);log("Memory Manager updated persistent round state.");
+     await callClaude("Safety Monitor",SYSTEMS.Safety,context(`LATEST EVALUATION:\\n${state.evaluation}\\n\\nLATEST DRAFT:\\n${state.draft}\\n\\nCheck publication safety for the next round.`));
+     log("Safety Monitor cleared the workflow to continue.");
+   }
+   if(!state.stopReason)state.stopReason="Hard iteration cap stop: safety fallback.";
+   const final=await callClaude("Final Reviewer",SYSTEMS.FinalReviewer,context(`FINAL DRAFT:\\n${state.draft}\\n\\nLATEST EVALUATION:\\n${state.evaluation}\\n\\nSAFETY CHECK:\\nAutomatic publication policy: 100% evaluator accuracy only.\\n\\nSTOP REASON:\\n${state.stopReason}`));
+   showOutput("Final Reviewer",final);log("Final Reviewer completed: release decision returned.","good");
+   const canPublish=state.stopReason.startsWith("Threshold stop") && /automatic publication|publish/i.test(final) && !/human review required/i.test(final);
+   if(canPublish){state.stopReason+=" Final Reviewer approved automatic publication.";$("stopBadge").textContent="AUTO-PUBLISHED";log("Automatic publication gate passed.","good");}
+   else {$("stopBadge").textContent="HUMAN REVIEW REQUIRED";log("Automatic publication blocked; article saved for human review.","warn")}
+   $("finalSummary").textContent=`Stop reason: ${state.stopReason}\\n\\nFinal Reviewer response:\\n${final}\\n\\nArticle:\\n${state.draft}\\n\\nExecution stats: ${state.round} evaluation rounds, ${state.calls} live Claude calls, ${state.retries} retries.`;
+ }catch(e){state.stopReason=`Run failed: ${e.message}`;$("stopBadge").textContent="RECOVERY REQUIRED";$("finalSummary").textContent=state.stopReason;log(state.stopReason,"bad")}
+ finally{state.running=false;$("runBtn").disabled=false;$("stopBtn").disabled=true;$("roundLabel").textContent=state.round?`Completed — ${state.stopReason}`:"Run failed";renderMetrics()}
+}
+$("runBtn").onclick=run;
+$("stopBtn").onclick=()=>{state.stopRequested=true;log("Stop requested. The active API call will finish or fail safely.","warn")};
+$("demoBtn").onclick=()=>{$("news").value="A newly announced frontier AI model introduces a claimed improvement in reasoning performance and a new developer API. The announcement has triggered discussion among AI professionals about benchmarks, deployment and practical reliability."; $("sources").value="Source A (primary announcement): The model provider's official announcement describing release date, API availability, stated benchmark results and documented limitations.\\n\\nSource B (independent technical report): An independent analysis that reproduces or evaluates selected benchmark claims and discusses methodology.\\n\\nSource C (independent industry report): Coverage confirming the launch and contextualizing the product and developer impact.\\n\\nReplace this example with real source excerpts/URLs before relying on the factuality gate.";log("Example event loaded.")};
+renderMetrics();
+</script>
+</body>
+</html>
