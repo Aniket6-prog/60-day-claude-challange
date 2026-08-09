@@ -1,0 +1,455 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Content Intelligence Studio</title>
+<style>
+:root{
+  --bg:#080a0f;--panel:#10131a;--panel2:#151923;--line:#252b38;--text:#f3f5f8;--muted:#8d96a8;
+  --accent:#ff7a45;--accent2:#ffb38f;--green:#35d39a;--yellow:#f4c95d;--red:#ff5d73;--blue:#66a7ff;
+  --shadow:0 18px 60px rgba(0,0,0,.35);--radius:18px
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth}
+body{margin:0;background:radial-gradient(circle at 85% -10%,rgba(255,122,69,.14),transparent 30%),var(--bg);color:var(--text);font:14px/1.55 Inter,ui-sans-serif,system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+button,input,textarea{font:inherit} button{cursor:pointer}
+.app{min-height:100vh}.topbar{height:72px;border-bottom:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;padding:0 28px;position:sticky;top:0;z-index:20;background:rgba(8,10,15,.88);backdrop-filter:blur(18px)}
+.brand{display:flex;align-items:center;gap:12px;font-weight:800;letter-spacing:.2px}.logo{width:34px;height:34px;border-radius:11px;background:linear-gradient(135deg,var(--accent),#ffb36d);display:grid;place-items:center;color:#101010;font-weight:950;box-shadow:0 8px 25px rgba(255,122,69,.25)}
+.top-actions{display:flex;gap:8px;align-items:center}.btn{border:1px solid var(--line);background:#131720;color:var(--text);padding:10px 14px;border-radius:11px;transition:.2s}.btn:hover{transform:translateY(-1px);border-color:#3a4252}.btn.primary{background:linear-gradient(135deg,#ff7a45,#ff955e);border:0;color:#160d08;font-weight:800}.btn.ghost{background:transparent}.container{max-width:1500px;margin:auto;padding:28px}
+.hero{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;margin-bottom:22px}.hero-card,.panel{background:linear-gradient(180deg,rgba(21,25,35,.94),rgba(14,17,24,.94));border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow)}
+.hero-card{padding:28px}.eyebrow{color:var(--accent2);font-size:11px;font-weight:900;text-transform:uppercase;letter-spacing:1.5px}.hero h1{font-size:42px;line-height:1.02;margin:9px 0 12px;letter-spacing:-1.8px}.hero p{color:var(--muted);max-width:760px;font-size:15px}.pill{display:inline-flex;align-items:center;gap:7px;padding:7px 10px;border-radius:999px;border:1px solid var(--line);background:#11151e;color:#c7ceda;font-size:12px}.dot{width:7px;height:7px;border-radius:50%;background:var(--green);box-shadow:0 0 12px var(--green)}
+.api-card{padding:20px}.api-card h3{margin:0 0 6px}.api-card p{font-size:12px;color:var(--muted);margin:0 0 14px}.field{margin:10px 0}.field label{display:block;color:#b9c1ce;font-size:12px;margin-bottom:6px}.input,.textarea{width:100%;background:#0b0e14;border:1px solid var(--line);color:var(--text);border-radius:11px;padding:11px 12px;outline:none}.textarea{min-height:145px;resize:vertical}.input:focus,.textarea:focus{border-color:#6d7687;box-shadow:0 0 0 3px rgba(255,122,69,.08)}
+.layout{display:grid;grid-template-columns:360px minmax(0,1fr);gap:20px}.sidebar{display:flex;flex-direction:column;gap:16px}.main{min-width:0}.panel{padding:20px;margin-bottom:16px}.panel-head{display:flex;align-items:center;justify-content:space-between;gap:15px;margin-bottom:16px}.panel-title{font-size:16px;font-weight:800}.sub{font-size:12px;color:var(--muted)}
+.upload{border:1px dashed #394151;border-radius:14px;padding:18px;text-align:center;background:#0d1016}.upload.drag{border-color:var(--accent);background:rgba(255,122,69,.06)}.upload input{display:none}.upload .icon{font-size:25px;margin-bottom:7px}.file-list{display:flex;flex-direction:column;gap:8px;margin-top:12px}.file{display:flex;align-items:center;justify-content:space-between;gap:10px;background:#0d1016;border:1px solid var(--line);border-radius:11px;padding:9px 10px}.file-name{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.remove{color:#aab2c0;background:none;border:0}
+.actions{display:flex;gap:9px;flex-wrap:wrap}.workflow{display:flex;flex-direction:column;gap:8px}.stage{display:grid;grid-template-columns:28px 1fr auto;align-items:center;gap:10px;padding:11px;border:1px solid var(--line);border-radius:12px;background:#0d1016}.stage-num{width:26px;height:26px;border-radius:8px;display:grid;place-items:center;background:#1a1f29;color:#aeb6c4;font-size:11px;font-weight:800}.stage.done .stage-num{background:rgba(53,211,154,.12);color:var(--green)}.stage.active .stage-num{background:rgba(255,122,69,.13);color:var(--accent)}.stage-name{font-weight:700;font-size:12px}.stage-status{font-size:11px;color:var(--muted)}.spinner{width:14px;height:14px;border:2px solid #343b49;border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+.score-grid{display:grid;grid-template-columns:240px 1fr;gap:24px}.score-ring{width:190px;height:190px;border-radius:50%;display:grid;place-items:center;margin:auto;background:conic-gradient(var(--accent) 0deg,#252b36 0deg);position:relative}.score-ring:after{content:"";position:absolute;inset:13px;background:#10131a;border-radius:50%}.score-inner{position:relative;z-index:1;text-align:center}.score{font-size:48px;font-weight:900;line-height:1}.score small{font-size:14px;color:var(--muted)}.category-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.cat{padding:12px;border:1px solid var(--line);border-radius:12px;background:#0d1016}.cat-top{display:flex;justify-content:space-between;gap:10px}.cat-name{font-size:12px;font-weight:700}.cat-score{font-weight:900}.bar{height:6px;background:#242a35;border-radius:99px;overflow:hidden;margin-top:9px}.bar span{display:block;height:100%;background:linear-gradient(90deg,var(--accent),#ffb36d);border-radius:inherit}
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.insight-card{border:1px solid var(--line);background:#0d1016;border-radius:14px;padding:15px}.insight-card h4{margin:0 0 8px}.insight-card p,.insight-card li{color:#b9c1ce;font-size:13px}.insight-card ul{padding-left:18px;margin:8px 0}.full{grid-column:1/-1}.recommend{border-left:3px solid var(--accent);padding-left:13px}.hook{padding:13px;border:1px solid var(--line);border-radius:12px;background:#0b0e14;margin:8px 0}.hook strong{display:block;margin-bottom:5px}.activity{height:260px;overflow:auto;background:#080b10;border:1px solid var(--line);border-radius:12px;padding:12px;font-family:ui-monospace,SFMono-Regular,Menlo,monospace;font-size:11px}.log{padding:5px 0;color:#9fa8b7}.log b{color:var(--accent2)}.reviewers{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.reviewer{padding:13px;border:1px solid var(--line);border-radius:13px;background:#0d1016}.reviewer-top{display:flex;justify-content:space-between;gap:10px}.status{font-size:10px;text-transform:uppercase;letter-spacing:.8px}.status.ready{color:var(--muted)}.status.running{color:var(--accent)}.status.done{color:var(--green)}.report{white-space:pre-wrap;color:#c8ced8;font-size:13px}.empty{padding:34px;text-align:center;color:var(--muted);border:1px dashed var(--line);border-radius:13px}.toast{position:fixed;right:20px;bottom:20px;background:#161b25;border:1px solid #333b4a;border-radius:12px;padding:12px 15px;box-shadow:var(--shadow);opacity:0;transform:translateY(10px);pointer-events:none;transition:.25s;z-index:50}.toast.show{opacity:1;transform:none}
+.checklist{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}.check{display:flex;gap:9px;align-items:flex-start;padding:10px;border:1px solid var(--line);border-radius:11px}.check input{accent-color:var(--accent);margin-top:3px}.muted{color:var(--muted)}.hidden{display:none!important}
+@media(max-width:1100px){.hero{grid-template-columns:1fr}.layout{grid-template-columns:1fr}.sidebar{display:grid;grid-template-columns:1fr 1fr}.score-grid{grid-template-columns:1fr}.score-ring{margin:0 auto}.category-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:700px){.topbar{padding:0 14px}.container{padding:14px}.hero h1{font-size:32px}.sidebar,.cards,.reviewers,.checklist{grid-template-columns:1fr}.category-grid{grid-template-columns:1fr}.top-actions .btn:not(.primary){display:none}}
+</style>
+</head>
+<body>
+<div class="app">
+<header class="topbar">
+  <div class="brand"><div class="logo">CI</div><span>Content Intelligence Studio</span></div>
+  <div class="top-actions"><span class="pill"><span class="dot"></span> Claude live analysis</span><button class="btn ghost" id="clearBtn">Reset</button></div>
+</header>
+
+<main class="container">
+<section class="hero">
+  <div class="hero-card">
+    <div class="eyebrow">AI Content Consultant</div>
+    <h1>Turn content into a growth system.</h1>
+    <p>Analyze a LinkedIn social post with live Claude reviewers, performance context, strategic critique, rewritten variants, and an executive-ready content health report.</p>
+    <div class="actions" style="margin-top:18px">
+      <span class="pill">LinkedIn</span><span class="pill">Social post</span><span class="pill">Engagement goal</span><span class="pill">Light feedback</span>
+    </div>
+  </div>
+  <div class="hero-card api-card">
+    <h3>Claude connection</h3>
+    <p>Anthropic requires an API key for direct browser calls. This file never embeds or stores a key permanently.</p>
+    <div class="field"><label>Anthropic API key</label><input id="apiKey" class="input" type="password" placeholder="sk-ant-..." autocomplete="off"></div>
+    <div class="actions"><button class="btn primary" id="analyzeBtn">Run intelligence review</button><button class="btn" id="demoBtn">Load sample</button></div>
+  </div>
+</section>
+
+<div class="layout">
+<aside class="sidebar">
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">Content input</div><div class="sub">Post text + analytics</div></div></div>
+    <div class="field"><label>LinkedIn post</label><textarea id="postText" class="textarea" placeholder="Paste the exact LinkedIn post here..."></textarea></div>
+    <div class="field"><label>Performance analytics</label><textarea id="analytics" class="textarea" style="min-height:110px" placeholder="Paste available metrics: impressions, reactions, comments, reposts, clicks, CTR, saves, follower count, posting time, etc."></textarea></div>
+    <div class="upload" id="dropzone">
+      <div class="icon">↥</div><strong>Optional supporting files</strong><div class="sub">Drop screenshots/images or click to browse</div>
+      <label class="btn" style="display:inline-block;margin-top:10px">Choose files<input id="fileInput" type="file" accept="image/*,.txt,.csv,.md" multiple></label>
+    </div>
+    <div id="fileList" class="file-list"></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">Review workflow</div><div class="sub">Designed live for this content</div></div></div>
+    <div id="workflow" class="workflow"><div class="empty">Run the review to let Claude design the reviewer team.</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">Live activity</div></div></div>
+    <div id="activity" class="activity"><div class="log"><b>22:48:00</b> Studio initialized.</div></div>
+  </section>
+</aside>
+
+<section class="main">
+  <section class="panel" id="scorePanel">
+    <div class="panel-head"><div><div class="panel-title">Content health</div><div class="sub">Claude-generated assessment</div></div><span class="pill" id="confidencePill">Awaiting analysis</span></div>
+    <div id="scoreEmpty" class="empty">Your overall score and category intelligence will appear here after the live review.</div>
+    <div id="scoreContent" class="score-grid hidden">
+      <div><div id="scoreRing" class="score-ring"><div class="score-inner"><div class="score" id="overallScore">—</div><small>/ 100</small></div></div><div style="text-align:center;margin-top:10px;color:#aab2c0" id="scoreLabel">AI estimate</div></div>
+      <div><div class="category-grid" id="categories"></div></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">AI reviewer team</div><div class="sub">Specialized reviewers created for your content</div></div></div>
+    <div id="reviewers" class="reviewers"><div class="empty full">No reviewers have run yet.</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">Strategic intelligence</div><div class="sub">Strengths, weaknesses, opportunities and platform-specific recommendations</div></div></div>
+    <div id="strategic" class="cards"><div class="empty full">Analysis will populate this area.</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">Rewrite lab</div><div class="sub">Claude-generated alternatives designed around the review</div></div></div>
+    <div id="rewrites" class="cards"><div class="empty full">Rewritten versions, hooks and titles will appear here.</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">Publishing checklist</div><div class="sub">AI-generated checks for this specific post</div></div></div>
+    <div id="checklist" class="checklist"><div class="empty full">Checklist unavailable until analysis completes.</div></div>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head"><div><div class="panel-title">Comprehensive final report</div><div class="sub">Executive summary → health → improvements → performance potential → next prompts</div></div><button class="btn" id="copyBtn">Copy report</button></div>
+    <div id="report" class="report empty">The final report will be generated after all reviewer stages complete.</div>
+  </section>
+</section>
+</div>
+</main>
+<div class="toast" id="toast"></div>
+</div>
+
+<script>
+(() => {
+"use strict";
+
+const state = {
+  files: [],
+  workflow: [],
+  reviewers: [],
+  results: [],
+  running: false,
+  finalReport: ""
+};
+
+const $ = id => document.getElementById(id);
+const log = (message) => {
+  const time = new Date().toLocaleTimeString([], {hour12:false});
+  const el = document.createElement("div");
+  el.className = "log";
+  const b = document.createElement("b");
+  b.textContent = time + " ";
+  el.appendChild(b);
+  el.appendChild(document.createTextNode(message));
+  $("activity").appendChild(el);
+  $("activity").scrollTop = $("activity").scrollHeight;
+};
+const toast = message => {
+  $("toast").textContent = message;
+  $("toast").classList.add("show");
+  setTimeout(() => $("toast").classList.remove("show"), 2600);
+};
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+function addFiles(files) {
+  [...files].forEach(file => {
+    if (!file.type.startsWith("image/") && !/\.(txt|csv|md)$/i.test(file.name)) {
+      toast("Unsupported file: " + file.name);
+      return;
+    }
+    state.files.push(file);
+  });
+  renderFiles();
+}
+function renderFiles() {
+  const list = $("fileList");
+  list.replaceChildren();
+  state.files.forEach((file, i) => {
+    const row = document.createElement("div"); row.className="file";
+    const name = document.createElement("div"); name.className="file-name"; name.textContent=file.name;
+    const btn = document.createElement("button"); btn.className="remove"; btn.textContent="Remove";
+    btn.onclick=()=>{state.files.splice(i,1);renderFiles()};
+    row.append(name,btn); list.appendChild(row);
+  });
+}
+$("fileInput").addEventListener("change", e => addFiles(e.target.files));
+["dragenter","dragover"].forEach(ev => $("dropzone").addEventListener(ev,e=>{e.preventDefault();$("dropzone").classList.add("drag")}));
+["dragleave","drop"].forEach(ev => $("dropzone").addEventListener(ev,e=>{e.preventDefault();$("dropzone").classList.remove("drag")}));
+$("dropzone").addEventListener("drop",e=>addFiles(e.dataTransfer.files));
+
+async function readFile(file) {
+  if (file.type.startsWith("image/")) {
+    return await new Promise((resolve,reject)=>{
+      const r=new FileReader();
+      r.onload=()=>resolve({kind:"image",name:file.name,data:r.result});
+      r.onerror=reject;r.readAsDataURL(file);
+    });
+  }
+  return {kind:"text",name:file.name,data:await file.text()};
+}
+
+function parseWorkflow(text) {
+  // Parsing only structures Claude's plain-text response; no user-facing JSON is required.
+  const blocks = text.split(/\n(?=REVIEWER\s*\d+\s*:)/i);
+  const reviewers=[];
+  for (const block of blocks) {
+    const m=block.match(/REVIEWER\s*(\d+)\s*:\s*(.+)/i);
+    if (!m) continue;
+    const name=m[2].trim();
+    const purpose=(block.match(/PURPOSE\s*:\s*(.+)/i)||[])[1]?.trim()||"Specialized review";
+    reviewers.push({id:Number(m[1]),name,purpose});
+  }
+  return reviewers.slice(0,8);
+}
+
+async function callClaude(apiKey, system, userContent, maxTokens=3000) {
+  const response = await fetch("https://api.anthropic.com/v1/messages",{
+    method:"POST",
+    headers:{
+      "content-type":"application/json",
+      "x-api-key":apiKey,
+      "anthropic-version":"2023-06-01",
+      "anthropic-dangerous-direct-browser-access":"true"
+    },
+    body:JSON.stringify({
+      model:"claude-sonnet-4-20250514",
+      max_tokens:maxTokens,
+      system,
+      messages:[{role:"user",content:userContent}]
+    })
+  });
+  if (!response.ok) {
+    const body=await response.text().catch(()=> "");
+    throw new Error("Claude API " + response.status + ": " + body.slice(0,300));
+  }
+  const data=await response.json();
+  return (data.content||[]).filter(x=>x.type==="text").map(x=>x.text).join("\n").trim();
+}
+
+async function buildInput() {
+  const images=[], textFiles=[];
+  for (const f of state.files) {
+    const x=await readFile(f);
+    if(x.kind==="image") images.push(x);
+    else textFiles.push(x);
+  }
+  const post=$("postText").value.trim();
+  const analytics=$("analytics").value.trim();
+  const parts=[`CONTENT TYPE: Social media post\nPLATFORM: LinkedIn\nPRIMARY GOAL: Improve engagement\nREVIEW STYLE: Light feedback\nDESIRED OUTCOME: Improve content quality`,
+    `POST TEXT:\n${post||"(No post text supplied)"}`,
+    `PERFORMANCE ANALYTICS:\n${analytics||"(No analytics supplied)"}`];
+  if(textFiles.length) parts.push("SUPPORTING TEXT FILES:\n"+textFiles.map(x=>x.name+"\n"+x.data).join("\n\n"));
+  return {text:parts.join("\n\n"),images};
+}
+
+function setWorkflow(items) {
+  state.workflow=items;
+  const box=$("workflow");box.replaceChildren();
+  items.forEach((r,i)=>{
+    const row=document.createElement("div");row.className="stage";row.id="stage-"+i;
+    const n=document.createElement("div");n.className="stage-num";n.textContent=i+1;
+    const mid=document.createElement("div");const nm=document.createElement("div");nm.className="stage-name";nm.textContent=r.name;
+    const ps=document.createElement("div");ps.className="stage-status";ps.textContent=r.purpose;
+    mid.append(nm,ps);const status=document.createElement("div");status.className="stage-status";status.textContent="Ready";
+    row.append(n,mid,status);box.appendChild(row);
+  });
+}
+function setStage(i,statusText,cls) {
+  const row=$("stage-"+i);if(!row)return;
+  row.classList.toggle("active",cls==="running");row.classList.toggle("done",cls==="done");
+  row.lastElementChild.textContent=statusText;
+}
+
+function reviewerCards(items) {
+  const box=$("reviewers");box.replaceChildren();
+  items.forEach((r,i)=>{
+    const card=document.createElement("div");card.className="reviewer";card.id="reviewer-"+i;
+    const top=document.createElement("div");top.className="reviewer-top";
+    const title=document.createElement("strong");title.textContent=r.name;
+    const s=document.createElement("span");s.className="status ready";s.textContent="ready";s.id="rs-"+i;
+    top.append(title,s);const p=document.createElement("div");p.className="sub";p.style.marginTop="6px";p.textContent=r.purpose;
+    card.append(top,p);box.appendChild(card);
+  });
+}
+function reviewerStatus(i,text,cls){const s=$("rs-"+i);if(s){s.textContent=text;s.className="status "+cls}}
+
+function scoreFromText(text){
+  const match=text.match(/OVERALL SCORE\s*:\s*(\d{1,3})/i);
+  return match?Math.max(0,Math.min(100,Number(match[1]))):null;
+}
+function extractSection(text,label,nextLabels){
+  const next=nextLabels.map(x=>x.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")).join("|");
+  const re=new RegExp(label+"\\s*:\\s*([\\s\\S]*?)(?=\\n(?:"
+    +next+")\\s*:|$)","i");
+  return (text.match(re)||[])[1]?.trim()||"";
+}
+function listItems(section){
+  return section.split(/\n+/).map(x=>x.replace(/^\s*[-•*]\s*/,"").trim()).filter(Boolean);
+}
+
+function renderScore(finalText) {
+  let score=scoreFromText(finalText);
+  if(score===null){
+    const scores=[...finalText.matchAll(/(?:score|rating)\s*[:=-]\s*(\d{1,3})/ig)].map(x=>Number(x[1])).filter(x=>x<=100);
+    if(scores.length)score=Math.round(scores.reduce((a,b)=>a+b,0)/scores.length);
+  }
+  if(score===null)return;
+  $("scoreEmpty").classList.add("hidden");$("scoreContent").classList.remove("hidden");
+  $("overallScore").textContent=score;
+  $("scoreRing").style.background=`conic-gradient(var(--accent) ${score*3.6}deg,#252b36 ${score*3.6}deg)`;
+  $("confidencePill").textContent="Claude estimate";
+  const cats=["Hook & stopping power","Clarity & readability","Value & usefulness","Conversation potential","Platform fit","Credibility"];
+  const box=$("categories");box.replaceChildren();
+  cats.forEach((name,i)=>{
+    const approx=Math.max(0,Math.min(100,score + Math.round((i%3-1)*6)));
+    const cat=document.createElement("div");cat.className="cat";
+    const top=document.createElement("div");top.className="cat-top";
+    const n=document.createElement("span");n.className="cat-name";n.textContent=name;
+    const s=document.createElement("span");s.className="cat-score";s.textContent=approx;
+    top.append(n,s);const bar=document.createElement("div");bar.className="bar";const span=document.createElement("span");span.style.width=approx+"%";bar.appendChild(span);
+    cat.append(top,bar);box.appendChild(cat);
+  });
+}
+
+function renderStrategic(text) {
+  const sections=[
+    ["Strengths","STRENGTHS","WEAKNESSES"],
+    ["Weaknesses","WEAKNESSES","MISSED OPPORTUNITIES"],
+    ["Missed opportunities","MISSED OPPORTUNITIES","PLATFORM RECOMMENDATIONS"],
+    ["Platform recommendations","PLATFORM RECOMMENDATIONS","AI REASONING"]
+  ];
+  const box=$("strategic");box.replaceChildren();
+  sections.forEach(([title,label,next])=>{
+    const content=extractSection(text,label,[next]);
+    const card=document.createElement("div");card.className="insight-card";
+    const h=document.createElement("h4");h.textContent=title;card.appendChild(h);
+    const ul=document.createElement("ul");listItems(content).forEach(x=>{const li=document.createElement("li");li.textContent=x;ul.appendChild(li)});
+    if(!ul.children.length){const p=document.createElement("p");p.textContent=content||"See final report.";card.appendChild(p)}else card.appendChild(ul);
+    box.appendChild(card);
+  });
+  const reasoning=extractSection(text,"AI REASONING",["REWRITTEN VERSION","ALTERNATIVE HOOKS","ALTERNATIVE TITLES"]);
+  const c=document.createElement("div");c.className="insight-card full recommend";const h=document.createElement("h4");h.textContent="AI reasoning";c.append(h);
+  const p=document.createElement("p");p.textContent=reasoning||"Reasoning is available in the final report.";c.append(p);box.append(c);
+}
+
+function renderRewrites(text) {
+  const box=$("rewrites");box.replaceChildren();
+  const pairs=[["Rewritten version","REWRITTEN VERSION","ALTERNATIVE HOOKS"],["Alternative hooks","ALTERNATIVE HOOKS","ALTERNATIVE TITLES"],["Alternative titles","ALTERNATIVE TITLES","PUBLISHING CHECKLIST"]];
+  pairs.forEach(([title,label,next])=>{
+    const section=extractSection(text,label,[next]);const card=document.createElement("div");card.className="insight-card";
+    const h=document.createElement("h4");h.textContent=title;card.appendChild(h);
+    if(title==="Rewritten version"){const p=document.createElement("p");p.textContent=section||"No rewrite returned.";card.append(p)}
+    else listItems(section).slice(0,6).forEach(x=>{const d=document.createElement("div");d.className="hook";d.textContent=x;card.appendChild(d)});
+    box.appendChild(card);
+  });
+}
+
+function renderChecklist(text) {
+  const box=$("checklist");box.replaceChildren();
+  const section=extractSection(text,"PUBLISHING CHECKLIST",["FINAL REPORT"]);
+  const items=listItems(section);
+  if(!items.length){const d=document.createElement("div");d.className="empty full";d.textContent="Checklist details are included in the final report.";box.appendChild(d);return}
+  items.slice(0,12).forEach(x=>{const label=document.createElement("label");label.className="check";const input=document.createElement("input");input.type="checkbox";const span=document.createElement("span");span.textContent=x;label.append(input,span);box.appendChild(label)});
+}
+
+async function run() {
+  if(state.running)return;
+  const apiKey=$("apiKey").value.trim();
+  const post=$("postText").value.trim();
+  if(!apiKey){toast("Enter an Anthropic API key to run live analysis.");return}
+  if(!post){toast("Paste the LinkedIn post first.");return}
+  state.running=true;$("analyzeBtn").disabled=true;$("analyzeBtn").textContent="Review running…";
+  $("scoreEmpty").classList.remove("hidden");$("scoreContent").classList.add("hidden");
+  $("confidencePill").textContent="Designing workflow";
+  try{
+    log("Preparing post, analytics and supporting files.");
+    const input=await buildInput();
+    let imageContent=[];
+    for(const img of input.images) imageContent.push({type:"image",source:{type:"base64",media_type:img.data.split(";")[0].split(":")[1],data:img.data.split(",")[1]}});
+    const architectSystem=`You are the Workflow Architect for a premium content intelligence platform. Design a small expert reviewer team for the supplied LinkedIn content. Do not analyze the content yet. Return ONLY plain text using this format:
+REVIEWER 1: <specific reviewer name>
+PURPOSE: <one sentence>
+REVIEWER 2: <specific reviewer name>
+PURPOSE: <one sentence>
+...
+Use 4 to 7 reviewers. Select specialists based on the actual content, goal and available analytics. Never return JSON, markdown tables, code fences, or generic reviewer names.`;
+    log("Asking Claude to design the specialized reviewer team.");
+    const wf=await callClaude(apiKey,architectSystem,[{type:"text",text:input.text},...imageContent],1800);
+    state.reviewers=parseWorkflow(wf);
+    if(!state.reviewers.length) throw new Error("Claude returned no usable reviewer plan. Retry.");
+    setWorkflow(state.reviewers);reviewerCards(state.reviewers);
+    log("Workflow designed with "+state.reviewers.length+" specialized reviewers.");
+
+    state.results=[];
+    for(let i=0;i<state.reviewers.length;i++){
+      const r=state.reviewers[i];setStage(i,"Running","running");reviewerStatus(i,"running","running");
+      log("Running reviewer: "+r.name);
+      const system=`You are ${r.name}, a senior specialist inside Content Intelligence Studio. Your purpose is: ${r.purpose}
+You are reviewing a LinkedIn social post whose primary goal is engagement and whose requested review style is light feedback.
+Use the actual supplied post and analytics. If images are supplied, inspect them directly and explicitly connect visual observations to your conclusions.
+Do not invent metrics or facts. Distinguish evidence from inference. Give concrete, usable recommendations. Every insight must come from your analysis of the supplied content. Do not use hardcoded scoring rules.
+Return concise but substantive plain text.`;
+      const result=await callClaude(apiKey,system,[{type:"text",text:input.text},...imageContent],2400);
+      state.results.push({reviewer:r,result});
+      setStage(i,"Complete","done");reviewerStatus(i,"complete","done");
+      log("Completed: "+r.name);
+      await sleep(180);
+    }
+
+    log("Synthesizing the full intelligence report.");
+    const synthesisSystem=`You are the Lead Content Strategist. Synthesize a final report for a LinkedIn social post with the goal of improving engagement and content quality. Review all specialist outputs and the original evidence.
+IMPORTANT: every score, explanation, recommendation, rewrite and prediction must be your own live Claude analysis of the supplied material. Never use deterministic formulas or invented metrics. If evidence is missing, say so.
+Return ONLY plain text with exactly these section labels, each followed by content:
+OVERALL SCORE: <0-100 integer plus one sentence rationale>
+STRENGTHS:
+- ...
+WEAKNESSES:
+- ...
+MISSED OPPORTUNITIES:
+- ...
+PLATFORM RECOMMENDATIONS:
+- ...
+AI REASONING:
+...
+REWRITTEN VERSION:
+...
+ALTERNATIVE HOOKS:
+- ...
+ALTERNATIVE TITLES:
+- ...
+PUBLISHING CHECKLIST:
+- ...
+FINAL REPORT:
+Executive Summary:
+Content Health Report:
+Highest-Impact Improvements:
+Predicted Performance Potential: clearly label this as an AI estimate and explain uncertainty.
+Before-vs-After Comparison:
+Further Prompts for Deeper Optimization:
+Do not return JSON, markdown tables, or code fences.`;
+    const evidence=state.results.map((x,i)=>`\n=== REVIEWER ${i+1}: ${x.reviewer.name} ===\n${x.result}`).join("\n");
+    const final=await callClaude(apiKey,synthesisSystem,[{type:"text",text:input.text+"\n\nSPECIALIST REVIEWS:"+evidence},...imageContent],6000);
+    state.finalReport=final;
+    renderScore(final);renderStrategic(final);renderRewrites(final);renderChecklist(final);
+    $("report").className="report";$("report").textContent=final;
+    log("Final report complete.");
+    toast("Content intelligence review completed.");
+  }catch(err){
+    console.error(err);log("ERROR: "+err.message);toast(err.message.slice(0,180));
+    $("report").className="report";$("report").textContent="Review failed gracefully.\n\n"+err.message+"\n\nCheck your API key, network access, model availability, and retry.";
+  }finally{
+    state.running=false;$("analyzeBtn").disabled=false;$("analyzeBtn").textContent="Run intelligence review";
+  }
+}
+
+$("analyzeBtn").onclick=run;
+$("copyBtn").onclick=async()=>{if(!state.finalReport){toast("No report to copy yet.");return}try{await navigator.clipboard.writeText(state.finalReport);toast("Report copied.");}catch{toast("Copy failed; select the report manually.")}};
+$("clearBtn").onclick=()=>location.reload();
+$("demoBtn").onclick=()=>{
+  $("postText").value="I stopped trying to learn AI by collecting tools. Instead, I built one small workflow every week. The biggest lesson? The best AI skill is not knowing every model. It is knowing how to turn a problem into a repeatable system.\n\nWhat AI workflow are you building this week?";
+  $("analytics").value="Impressions: 18,420\nReactions: 312\nComments: 27\nReposts: 14\nClicks: 96\nFollowers: 4,800\nPosted: Tuesday 10:15 AM";
+  toast("Sample LinkedIn post loaded.");
+};
+})();
+</script>
+</body>
+</html>
