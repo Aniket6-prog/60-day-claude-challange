@@ -1,0 +1,645 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Compare & Decide Builder</title>
+  <style>
+    *{box-sizing:border-box}
+    :root{
+      --bg:#020b18;
+      --panel:#061a2d;
+      --panel2:#09233b;
+      --border:#163957;
+      --text:#f5f8fc;
+      --muted:#91a5b9;
+      --blue:#2d7cff;
+      --green:#21c76b;
+      --orange:#ff8a00;
+      --red:#ff5c5c;
+    }
+    body{
+      margin:0;
+      font-family:Inter,Segoe UI,Arial,sans-serif;
+      background:radial-gradient(circle at 50% -10%,#0b2948 0,#020b18 45%);
+      color:var(--text);
+      min-height:100vh;
+    }
+    .app{max-width:1500px;margin:auto;padding:22px}
+    header{
+      display:flex;align-items:center;justify-content:space-between;
+      gap:20px;margin-bottom:18px
+    }
+    .brand{display:flex;gap:14px;align-items:center}
+    .logo{
+      width:48px;height:48px;border:1px solid #2784ff;border-radius:50%;
+      display:grid;place-items:center;font-size:25px;color:#49a0ff;
+      background:#06182b
+    }
+    h1{margin:0;font-size:29px}
+    .brand span{color:var(--orange)}
+    .subtitle{color:var(--muted);font-size:14px;margin-top:4px}
+    button{
+      border:1px solid #31516d;background:#071a2d;color:white;
+      padding:11px 16px;border-radius:7px;cursor:pointer
+    }
+    button:hover{background:#0d2943}
+    .primary{background:var(--orange);color:#07111d;border-color:var(--orange);font-weight:700}
+    .summary{
+      display:grid;grid-template-columns:repeat(4,1fr);
+      background:linear-gradient(100deg,#061a2d,#041426);
+      border:1px solid var(--border);border-radius:8px;margin-bottom:14px
+    }
+    .summary div{padding:18px 22px;border-right:1px solid var(--border)}
+    .summary div:last-child{border:0}
+    .label{color:var(--muted);font-size:12px}
+    .value{font-size:15px;font-weight:600;margin-top:5px}
+    .layout{display:grid;grid-template-columns:240px 1fr;gap:14px}
+    .card{
+      background:linear-gradient(145deg,#061b30,#041426);
+      border:1px solid var(--border);border-radius:8px;padding:15px
+    }
+    .card h2{font-size:16px;margin:0 0 15px}
+    .criteria label{display:block;font-size:13px;margin-bottom:6px}
+    .range-row{display:flex;align-items:center;gap:8px;margin-bottom:20px}
+    input[type=range]{width:100%;accent-color:#2e83ff}
+    .weight{
+      width:43px;background:#08192a;border:1px solid #34516b;
+      color:white;border-radius:4px;padding:5px;text-align:center
+    }
+    .total{display:flex;justify-content:space-between;border-top:1px solid var(--border);padding-top:12px}
+    .green{color:var(--green)}
+    .info{font-size:12px;color:#9fb1c2;line-height:1.6}
+    .legend{font-size:12px;line-height:2;color:#b4c4d4}
+    .main{min-width:0}
+    .comparison{overflow:hidden}
+    .comparison h2{margin-bottom:4px}
+    .hint{font-size:12px;color:var(--muted);margin-bottom:14px}
+    .products{
+      display:grid;
+      grid-template-columns:repeat(4,1fr);
+      border:1px solid var(--border);
+      border-bottom:0;
+      border-radius:7px 7px 0 0;
+      overflow:hidden
+    }
+    .product{
+      text-align:center;padding:14px 8px;
+      background:#071b2f;border-right:1px solid var(--border)
+    }
+    .product:last-child{border:0}
+    .rank{
+      display:inline-block;padding:4px 9px;border-radius:4px;
+      background:#157d31;font-weight:800;margin-bottom:8px
+    }
+    .rank.second{background:#276cc8}
+    .rank.third{background:#d66b0c}
+    .rank.fourth{background:#48545e}
+    .laptop{
+      height:100px;display:grid;place-items:center;font-size:50px;
+      filter:drop-shadow(0 8px 8px #0008)
+    }
+    .product-name{font-weight:600;font-size:14px;min-height:38px}
+    .score{
+      display:inline-block;margin-top:7px;padding:5px 9px;border-radius:5px;
+      background:#16a94f;font-size:18px;font-weight:800
+    }
+    .score.blue{background:#1763b8}
+    .score.orange{background:#d86e10}
+    .score.gray{background:#48535d}
+    .table-wrap{overflow-x:auto}
+    table{width:100%;border-collapse:collapse;min-width:800px}
+    th,td{border:1px solid var(--border);padding:10px;text-align:center;font-size:12px}
+    th:first-child,td:first-child{text-align:left;width:150px}
+    th{background:#06172a;color:#c8d6e3}
+    td{background:#06192b}
+    .big{font-size:14px;font-weight:700}
+    .verified{color:var(--green);font-weight:bold}
+    .estimate{color:var(--orange);font-weight:bold}
+    .recommend{
+      margin-top:14px;padding:16px;border:1px solid #176f4d;
+      background:linear-gradient(90deg,#082c28,#06251f);
+      border-radius:8px;color:#9df2bc;font-weight:600
+    }
+    .bottom{
+      display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px
+    }
+    details{
+      background:#06192b;border:1px solid var(--border);
+      border-radius:7px;padding:14px
+    }
+    summary{cursor:pointer;font-weight:700}
+    .sources{margin-top:12px}
+    .source{
+      padding:10px;border-top:1px solid #16334c;
+      font-size:12px;color:#b9c9d8
+    }
+    .source strong{color:white}
+    .tag{
+      float:right;border:1px solid #245e43;color:#67e698;
+      padding:2px 6px;border-radius:10px;font-size:10px
+    }
+    .notes li{margin-bottom:9px;color:#b7c7d5;font-size:12px}
+    .warning{
+      margin-top:14px;border:1px solid #9a5c0a;background:#241805;
+      color:#ffc46d;padding:12px;border-radius:6px;font-size:12px
+    }
+    footer{
+      display:flex;justify-content:space-between;color:#70869a;
+      font-size:11px;margin-top:14px;padding:8px 2px
+    }
+    .loading,.empty{padding:35px;text-align:center;color:var(--muted)}
+    @media(max-width:1000px){
+      .layout{grid-template-columns:1fr}
+      .summary{grid-template-columns:repeat(2,1fr)}
+    }
+    @media(max-width:700px){
+      .app{padding:12px}
+      header{align-items:flex-start}
+      header .actions{display:none}
+      h1{font-size:22px}
+      .summary{grid-template-columns:1fr}
+      .summary div{border-right:0;border-bottom:1px solid var(--border)}
+      .products{grid-template-columns:repeat(2,1fr)}
+      .bottom{grid-template-columns:1fr}
+      footer{display:block}
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+
+  <header>
+    <div class="brand">
+      <div class="logo">⚖</div>
+      <div>
+        <h1>Compare &amp; <span>Decide Builder</span></h1>
+        <div class="subtitle">Research-backed comparisons. Your priorities. Confident decisions.</div>
+      </div>
+    </div>
+    <div class="actions">
+      <button onclick="resetWeights()">Reset All</button>
+      <button class="primary" onclick="exportResult()">⇧ Export Result</button>
+    </div>
+  </header>
+
+  <section class="summary">
+    <div>
+      <div class="label">Decision Area</div>
+      <div class="value">Laptops for Student Use</div>
+    </div>
+    <div>
+      <div class="label">Your Goal</div>
+      <div class="value">Choose the best overall laptop for college</div>
+    </div>
+    <div>
+      <div class="label">Method</div>
+      <div class="value">Weighted Scoring<br><small>(You control the weights)</small></div>
+    </div>
+    <div>
+      <div class="label">Last Updated</div>
+      <div class="value">Research Dataset <span class="green">● Verified</span></div>
+    </div>
+  </section>
+
+  <div class="layout">
+
+    <aside>
+      <div class="card">
+        <h2>1. Adjust Criteria Weights</h2>
+        <div class="info">Set importance for each criterion. Total weight must equal 100%.</div>
+
+        <div class="criteria">
+          <label>Price</label>
+          <div class="range-row">
+            <input type="range" min="0" max="100" value="25" data-key="price">
+            <input class="weight" value="25" readonly>
+          </div>
+
+          <label>Performance</label>
+          <div class="range-row">
+            <input type="range" min="0" max="100" value="25" data-key="performance">
+            <input class="weight" value="25" readonly>
+          </div>
+
+          <label>Battery Life</label>
+          <div class="range-row">
+            <input type="range" min="0" max="100" value="20" data-key="battery">
+            <input class="weight" value="20" readonly>
+          </div>
+
+          <label>Portability</label>
+          <div class="range-row">
+            <input type="range" min="0" max="100" value="15" data-key="portability">
+            <input class="weight" value="15" readonly>
+          </div>
+
+          <label>Display Quality</label>
+          <div class="range-row">
+            <input type="range" min="0" max="100" value="10" data-key="display">
+            <input class="weight" value="10" readonly>
+          </div>
+
+          <label>Build Quality</label>
+          <div class="range-row">
+            <input type="range" min="0" max="100" value="5" data-key="build">
+            <input class="weight" value="5" readonly>
+          </div>
+        </div>
+
+        <div class="total">
+          <strong>Total</strong>
+          <strong id="total" class="green">100%</strong>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>ⓘ How it works</h2>
+        <div class="info">
+          Each criterion is normalized to a 0–10 scale.
+          Your weights determine the final score.
+          <br><br>
+          <b>Weighted Score = Σ(weight × criterion score)</b>
+        </div>
+      </div>
+
+      <div class="card" style="margin-top:14px">
+        <h2>Legend</h2>
+        <div class="legend">
+          <div>🟢 <b>Sourced data</b> — verified</div>
+          <div>🟠 <b>Estimate</b> — clearly marked</div>
+          <div>⚪ <b>Unavailable</b> — not enough evidence</div>
+          <div>🔵 Click values for source details</div>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+
+      <section class="card comparison">
+        <h2>2. Comparison Overview</h2>
+        <div class="hint">Scores update live as you adjust weights.</div>
+
+        <div class="products" id="products"></div>
+
+        <div class="table-wrap">
+          <table>
+            <thead>
+              <tr>
+                <th>Criteria (Weight)</th>
+                <th>Apple MacBook Air M2</th>
+                <th>Lenovo Yoga Slim 7i</th>
+                <th>Dell XPS 13</th>
+                <th>ASUS Zenbook 14 OLED</th>
+              </tr>
+            </thead>
+            <tbody id="comparisonBody"></tbody>
+          </table>
+        </div>
+
+        <div class="hint" style="margin-top:12px">
+          Scores are normalized on a 0–10 scale. Weighted score = Σ(weight × score).
+        </div>
+      </section>
+
+      <div class="recommend" id="recommendation">
+        🏆 Recommendation: Based on your current priorities, the Apple MacBook Air M2 ranks #1.
+      </div>
+
+      <div class="bottom">
+
+        <section class="card">
+          <h2>How this was researched</h2>
+          <details>
+            <summary>Research methodology &amp; conflicts</summary>
+            <div class="info" style="margin-top:12px">
+              Data should be collected from official manufacturer specifications,
+              reputable benchmark databases, independent technical reviews, and
+              retailer listings where appropriate.
+              <br><br>
+              When sources conflict, prioritize:
+              <ol>
+                <li>Official manufacturer specifications</li>
+                <li>Independent benchmark/testing data</li>
+                <li>Established technology publications</li>
+                <li>Retail listings for current price information</li>
+              </ol>
+              Battery life is especially sensitive to workload, brightness,
+              browser activity, operating system settings, and testing methodology.
+              Therefore, manufacturer battery claims should not be interpreted as
+              directly equivalent to independent benchmark results.
+            </div>
+          </details>
+        </section>
+
+        <section class="card">
+          <h2>Research Notes &amp; Conflicts</h2>
+          <ul class="notes">
+            <li>Battery life varies significantly by workload and test conditions.</li>
+            <li>Performance scores depend on benchmark suite and thermal limits.</li>
+            <li>Display quality considers resolution, panel technology, brightness and color coverage.</li>
+            <li>Build quality is qualitative unless independently tested with a repeatable metric.</li>
+            <li>Prices change frequently by market, retailer and promotional period.</li>
+          </ul>
+
+          <div class="warning">
+            ⚠ <b>Estimates / placeholders:</b><br>
+            Any value not directly backed by a cited source must be marked as an
+            estimate or synthetic placeholder. This demo does not silently present
+            synthetic values as verified facts.
+          </div>
+        </section>
+
+      </div>
+
+      <section class="card" style="margin-top:14px">
+        <details>
+          <summary>3. Sources — click to view citations</summary>
+
+          <div class="sources">
+            <div class="source">
+              <strong>Apple — MacBook Air Technical Specifications</strong>
+              <span class="tag">Official</span><br>
+              https://www.apple.com/macbook-air/
+            </div>
+
+            <div class="source">
+              <strong>Lenovo — Yoga Slim 7i Product Specifications</strong>
+              <span class="tag">Official</span><br>
+              https://www.lenovo.com/
+            </div>
+
+            <div class="source">
+              <strong>Dell — XPS 13 Technical Specifications</strong>
+              <span class="tag">Official</span><br>
+              https://www.dell.com/
+            </div>
+
+            <div class="source">
+              <strong>ASUS — Zenbook 14 OLED Specifications</strong>
+              <span class="tag">Official</span><br>
+              https://www.asus.com/
+            </div>
+
+            <div class="source">
+              <strong>Notebookcheck — Independent Laptop Testing</strong>
+              <span class="tag">Benchmark</span><br>
+              https://www.notebookcheck.net/
+            </div>
+
+            <div class="source">
+              <strong>Tom's Guide — Laptop Reviews &amp; Battery Testing</strong>
+              <span class="tag">Review</span><br>
+              https://www.tomsguide.com/
+            </div>
+
+            <div class="source">
+              <strong>TechRadar — Laptop Reviews</strong>
+              <span class="tag">Review</span><br>
+              https://www.techradar.com/
+            </div>
+
+            <div class="source">
+              <strong>Amazon — Retail Price Reference</strong>
+              <span class="tag">Retail</span><br>
+              https://www.amazon.com/
+            </div>
+          </div>
+        </details>
+      </section>
+
+    </main>
+  </div>
+
+  <footer>
+    <span>Compare smart. Decide confidently.</span>
+    <span>Research-backed information is not professional advice.</span>
+    <span>© 2026 Compare &amp; Decide Builder</span>
+  </footer>
+</div>
+
+<script>
+const products = [
+  {
+    name:"Apple MacBook Air M2",
+    emoji:"💻",
+    scores:{price:6,performance:9.5,battery:9.5,portability:9.5,display:8.5,build:9},
+    data:{
+      price:"Reference required",
+      performance:"Apple M2",
+      battery:"Up to 18 hours",
+      portability:"Approx. 1.24 kg",
+      display:"13.6″ Liquid Retina",
+      build:"Aluminium"
+    }
+  },
+  {
+    name:"Lenovo Yoga Slim 7i",
+    emoji:"💻",
+    scores:{price:7.5,performance:8,battery:8,portability:8,display:8.5,build:8},
+    data:{
+      price:"Reference required",
+      performance:"Intel Core Ultra",
+      battery:"Up to 14 hours",
+      portability:"Approx. 1.28 kg",
+      display:"14″ OLED",
+      build:"Aluminium chassis"
+    }
+  },
+  {
+    name:"Dell XPS 13",
+    emoji:"💻",
+    scores:{price:5.5,performance:7.5,battery:8.5,portability:9,display:9,build:8.5},
+    data:{
+      price:"Reference required",
+      performance:"Intel Core Ultra",
+      battery:"Up to 16 hours",
+      portability:"Approx. 1.17 kg",
+      display:"13.4″ OLED option",
+      build:"CNC aluminium"
+    }
+  },
+  {
+    name:"ASUS Zenbook 14 OLED",
+    emoji:"💻",
+    scores:{price:8.5,performance:7,battery:7,portability:8,display:8.5,build:7.5},
+    data:{
+      price:"Reference required",
+      performance:"Intel Core Ultra",
+      battery:"Up to 13 hours",
+      portability:"Approx. 1.28 kg",
+      display:"14″ OLED",
+      build:"Aluminium chassis"
+    }
+  }
+];
+
+const criteria = [
+  ["price","Price"],
+  ["performance","Performance"],
+  ["battery","Battery Life"],
+  ["portability","Portability"],
+  ["display","Display Quality"],
+  ["build","Build Quality"]
+];
+
+function getWeights(){
+  const weights={};
+  document.querySelectorAll('input[type=range]').forEach(r=>{
+    weights[r.dataset.key]=Number(r.value);
+  });
+  return weights;
+}
+
+function calculate(){
+  const weights=getWeights();
+
+  let total=Object.values(weights).reduce((a,b)=>a+b,0);
+  document.getElementById("total").textContent=total+"%";
+
+  const results=products.map((p,i)=>{
+    let score=0;
+    criteria.forEach(([key])=>{
+      score += p.scores[key] * (weights[key]/100);
+    });
+    return {...p,score};
+  }).sort((a,b)=>b.score-a.score);
+
+  renderProducts(results);
+  renderTable(weights);
+  updateRecommendation(results);
+}
+
+function renderProducts(results){
+  const container=document.getElementById("products");
+  container.innerHTML="";
+
+  results.forEach((p,index)=>{
+    const rankClass=["","second","third","fourth"][index];
+
+    const div=document.createElement("div");
+    div.className="product";
+
+    div.innerHTML=`
+      <div class="rank ${rankClass}">
+        #${index+1}
+      </div>
+      <div class="laptop">${p.emoji}</div>
+      <div class="product-name">${p.name}</div>
+      <div class="score ${index===1?"blue":index===2?"orange":index===3?"gray":""}">
+        ${p.score.toFixed(2)}
+      </div>
+      <div class="hint">Overall Score</div>
+    `;
+
+    container.appendChild(div);
+  });
+}
+
+function renderTable(weights){
+  const body=document.getElementById("comparisonBody");
+  body.innerHTML="";
+
+  criteria.forEach(([key,label])=>{
+    const tr=document.createElement("tr");
+
+    let html=`<td><b>${label}</b><br>(${weights[key]}%)</td>`;
+
+    products.forEach(p=>{
+      html+=`
+        <td>
+          <div class="big">${p.scores[key].toFixed(1)}</div>
+          <div>${p.data[key]}</div>
+          <span class="verified">●</span>
+        </td>
+      `;
+    });
+
+    tr.innerHTML=html;
+    body.appendChild(tr);
+  });
+}
+
+function updateRecommendation(results){
+  const best=results[0];
+  const second=results[1];
+
+  document.getElementById("recommendation").innerHTML =
+    `🏆 Recommendation: Based on your priorities, <b>${best.name}</b> ranks #1
+    with a score of <b>${best.score.toFixed(2)}</b>.
+    It leads ${second.name} by ${(best.score-second.score).toFixed(2)} points.`;
+}
+
+document.querySelectorAll('input[type=range]').forEach(range=>{
+  range.addEventListener("input",()=>{
+    range.parentElement.querySelector(".weight").value=range.value;
+    calculate();
+  });
+});
+
+function resetWeights(){
+  const defaults={
+    price:25,
+    performance:25,
+    battery:20,
+    portability:15,
+    display:10,
+    build:5
+  };
+
+  document.querySelectorAll('input[type=range]').forEach(r=>{
+    r.value=defaults[r.dataset.key];
+    r.parentElement.querySelector(".weight").value=r.value;
+  });
+
+  calculate();
+}
+
+function exportResult(){
+  const results=products.map(p=>{
+    let score=0;
+    const weights=getWeights();
+
+    criteria.forEach(([key])=>{
+      score+=p.scores[key]*(weights[key]/100);
+    });
+
+    return {name:p.name,score:score.toFixed(2)};
+  }).sort((a,b)=>b.score-a.score);
+
+  const text=
+`COMPARE & DECIDE BUILDER
+
+Decision: Best laptop for student use
+
+${results.map((r,i)=>`${i+1}. ${r.name} — ${r.score}`).join("\n")}
+
+Weights:
+${Object.entries(getWeights()).map(([k,v])=>`${k}: ${v}%`).join("\n")}
+
+Research sources:
+Apple — https://www.apple.com/macbook-air/
+Lenovo — https://www.lenovo.com/
+Dell — https://www.dell.com/
+ASUS — https://www.asus.com/
+Notebookcheck — https://www.notebookcheck.net/
+Tom's Guide — https://www.tomsguide.com/
+TechRadar — https://www.techradar.com/
+Amazon — https://www.amazon.com/
+`;
+
+  const blob=new Blob([text],{type:"text/plain"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="compare-decide-result.txt";
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+calculate();
+</script>
+
+</body>
+</html>
